@@ -4,11 +4,16 @@ export interface AssetDef {
   url: string;
 }
 
+// BASE_URL membuat loader tetap benar saat game dibuka di root maupun subpath
+// (misalnya deployment GitHub Pages). Tanpa ini, URL relatif dapat dihitung
+// terhadap URL route saat ini, bukan terhadap root asset Vite.
+const assetUrl = (path: string): string => `${import.meta.env.BASE_URL}assets/${path}`;
+
 export const ASSETS: AssetDef[] = [
-  { key: 'arena', url: 'assets/environments/arena-ground.png' },
-  { key: 'tailor', url: 'assets/characters/tailor.png' },
-  { key: 'serat', url: 'assets/enemies/serat.png' },
-  { key: 'kutu', url: 'assets/enemies/kutu.png' },
+  { key: 'arena', url: assetUrl('environments/arena-ground.png') },
+  { key: 'tailor', url: assetUrl('characters/tailor.png') },
+  { key: 'serat', url: assetUrl('enemies/serat.png') },
+  { key: 'kutu', url: assetUrl('enemies/kutu.png') },
 ];
 
 /** Palet inti KELIM (hex angka untuk Phaser, string untuk teks). */
