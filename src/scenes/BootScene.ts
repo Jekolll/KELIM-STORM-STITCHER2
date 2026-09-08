@@ -24,22 +24,19 @@ export class BootScene extends Phaser.Scene {
 
   create(): void {
     this.cameras.main.setBackgroundColor('#14161d');
-    const fontsReady: Promise<unknown> =
-      typeof document !== 'undefined' && 'fonts' in document
-        ? (document as Document).fonts.ready
-        : Promise.resolve();
-    Promise.race([
-      fontsReady,
-      new Promise((r) => this.time.delayedCall(1600, () => r(true))),
-    ]).then(() => {
-      if (!this.sys.isActive()) return;
-      if (this.failures.length > 0) {
-        this.showAssetError();
-      } else {
-        markBootDone();
-        this.scene.start('Menu');
-      }
-    });
+    // JANGAN menunggu document.fonts.ready di sini: di sebagian browser/headless
+    // promise itu tidak pernah resolve. Fallback lama berbasis this.time.delayedCall
+    // juga tidak menyelamatkan karena clock Phaser ikut macet saat RAF tidak jalan
+    // (tab hidden, bot/crawler, dsb). Akibatnya boot stuck di "memuat… 100%".
+    // Font punya fallback lokal yang layak (Georgia/system-ui, lihat config/assets)
+    // dan @fontsource akan swap-in begitu selesai, jadi aman lanjut tanpa menunggu.
+    if (!this.sys.isActive()) return;
+    if (this.failures.length > 0) {
+      this.showAssetError();
+    } else {
+      markBootDone();
+      this.scene.start('Menu');
+    }
   }
 
   private showAssetError(): void {
