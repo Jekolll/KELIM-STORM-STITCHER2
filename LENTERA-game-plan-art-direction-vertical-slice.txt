@@ -1,0 +1,840 @@
+LENTERA: KEBUN TERAKHIR
+GAME DESIGN DOCUMENT + ART DIRECTION + ASSET PLAN
+VERTICAL SLICE SPECIFICATION + TECHNICAL PLAN + ACCEPTANCE CRITERIA
+Versi: 1.0 — usulan pre-production, belum disetujui
+
+STATUS DAN BATAS DOKUMEN
+- File laporan ini dibuat atas permintaan pengguna agar dapat dibagikan ke ChatGPT.
+- Tidak ada kode game yang dibuat/diubah, aset yang digenerate, commit, atau push.
+- Isi repository dan dependency belum diperiksa pada tahap ini.
+- Semua angka gameplay adalah baseline untuk diuji, bukan balancing yang sudah terbukti.
+- Seluruh checklist testing berstatus BELUM DIJALANKAN.
+- Tidak ada klaim bahwa aset, animasi, performa, atau game feel sudah tervalidasi.
+- Scope vertical slice dibedakan secara eksplisit dari kandidat ekspansi.
+
+============================================================
+1. TIGA KONSEP DAN PEMILIHAN
+============================================================
+
+KONSEP A — LENTERA: KEBUN TERAKHIR
+Genre: 2D arena action, survival singkat.
+Premis: penjaga kecil menggunakan lentera untuk mengusir makhluk malam dari kebun terbengkalai.
+Core gameplay: membaca telegraph, mendekat, melepaskan denyut cahaya jarak pendek, lalu bergerak/dash keluar dari bahaya.
+Core loop: positioning -> mengumpulkan kesempatan serang -> pulse -> menghindari balasan -> membersihkan ancaman -> menghadapi tekanan berikutnya.
+Target session: vertical slice 3–4 menit termasuk hasil/restart; gameplay aktif sekitar 2,5–3 menit.
+Kontrol desktop: WASD/panah bergerak; J atau klik kiri menyerang; Space/K dash; Esc pause. Tidak perlu mouse aiming.
+Kontrol touch: virtual stick kiri, tombol pulse dan dash kanan. Target utama landscape.
+Art style: ilustrasi storybook malam; gouache digital, boneka potongan kertas, lentera amber.
+Camera: top-down tiga-perempat, tetap, seluruh arena terlihat.
+Asset: pemain berlapis, dua enemy, arena kebun, foreground/props, VFX, HUD, menu, audio.
+Sistem utama: movement, pulse, dash, enemy telegraph, damage, spawn director, score, transitions, audio.
+Difficulty pemain: mudah dipahami; mastery berasal dari timing dan posisi.
+Difficulty development: menengah; animasi, telegraph, dan tuning combat paling penting.
+Kompleksitas: MEDIUM.
+Kecocokan generation: arena statis ilustratif, kamera tetap, karakter nonrealistis dengan animasi berlapis mengurangi kebutuhan frame generatif.
+Risiko: animasi transform bisa terasa seperti stiker jika pivot, overlap, shadow, dan anticipation buruk.
+
+KONSEP B — POS TERAKHIR: KURIR RUMAH HUJAN
+Genre: handcrafted grid puzzle.
+Premis: kurir mengantar surat di kompleks rumah mini dengan jembatan dan mekanisme.
+Core gameplay: mendorong objek, mengaktifkan jalur, merencanakan urutan pengiriman.
+Core loop: membaca level -> mencoba -> melihat konsekuensi -> undo bila perlu -> menyelesaikan pengiriman.
+Target session: 2–5 menit per level.
+Kontrol: WASD/panah atau swipe; Z undo; R reset; tombol touch setara.
+Art style: diorama kertas, krem, hijau lumut, merah bata.
+Camera: top-down tiga-perempat, grid terbaca, kamera tetap per level.
+Asset: kurir, rumah, jalan, peti, jembatan, mailbox, panel surat, UI.
+Sistem utama: grid rules, movement, undo, reset, level progression.
+Difficulty pemain: logika, bukan refleks; aturan bertambah bertahap.
+Difficulty development: rendah–menengah secara teknis, tetapi desain level berkualitas tetap menantang.
+Kompleksitas: MEDIUM untuk paket level polished.
+Kecocokan generation: objek sebagian besar statis; lingkungan dapat mengikuti reference board yang sama.
+Risiko: ilustrasi dapat menyamarkan grid; banyak level tidak otomatis berarti puzzle bagus.
+
+KONSEP C — KUMBANG POS: JALUR SENJA
+Genre: top-down arcade time trial.
+Premis: kumbang kurir membawa paket melalui lintasan taman mini.
+Core gameplay: mengontrol momentum, drift, checkpoint, dan shortcut berisiko.
+Core loop: satu putaran -> catatan waktu -> evaluasi tikungan -> coba lagi -> rekor baru.
+Target session: 60–120 detik per percobaan.
+Kontrol desktop: WASD/panah untuk kemudi/akselerasi; Space brake/drift.
+Kontrol touch: kiri/kanan dan drift dengan akselerasi otomatis.
+Art style: miniatur kebun ilustratif, daun besar, tanah hangat, kumbang bersiluet jelas.
+Camera: top-down hampir tegak.
+Asset: kumbang, paket, lintasan, barrier, checkpoint, daun, debu, HUD, audio mesin stylized.
+Sistem utama: handling arcade, collision lintasan, timer, checkpoint, restart; ghost hanya kandidat ekspansi.
+Difficulty pemain: mudah memulai, sulit menguasai tikungan.
+Difficulty development: menengah–tinggi; handling harus sangat baik agar menarik.
+Kompleksitas: MEDIUM–HIGH.
+Kecocokan generation: lintasan statis, kendaraan bisa memakai satu orientasi dasar yang diputar.
+Risiko: lighting yang tertanam pada sprite ikut berputar; shading kendaraan harus netral.
+
+PILIHAN: LENTERA: KEBUN TERAKHIR
+Penilaian desain awal, skala 1–5; bukan hasil playtest:
+                  Fun    Visual    Achievable scope    Polish
+LENTERA           4,5    4,5       4                    4,5
+POS TERAKHIR      4      4,5       4,5                  4,5
+KUMBANG POS       4,5    4         3,5                  4
+
+Alasan memilih:
+1. Cahaya melawan malam menghubungkan mekanik, character design, VFX, dan audio.
+2. Dua aksi utama sudah menghasilkan keputusan bermakna.
+3. Satu arena bisa terasa lengkap tanpa banyak konten.
+4. Lentera dan mantel penjaga memberi identitas kuat.
+5. Tersedia ruang polish besar pada timing, reaksi, pose, dan feedback.
+
+Pilar desain:
+- Dekat itu kuat, tetapi berbahaya.
+- Ancaman terbaca sebelum menghukum.
+- Cahaya hangat, malam hidup.
+- Sedikit konten, perhatian tinggi pada detail.
+
+NON-GOALS VERTICAL SLICE
+Tidak ada inventory, shop, crafting, skill tree, procedural map, multiplayer, akun, cloud save, equipment, quest, atau monetisasi. Boss bukan syarat slice pertama.
+
+============================================================
+2. ART DIRECTION TERPILIH
+============================================================
+
+2.1 VISUAL STYLE
+Dimensi: 2D dengan kedalaman melalui overlap, shadow, dan y-sorting; bukan 3D.
+Perspective: top-down tiga-perempat. Bagian atas kepala dan sedikit bagian depan tubuh terlihat.
+Camera: tetap; seluruh arena terlihat. Tidak ada camera follow atau zoom selama combat.
+Rendering: gouache digital dengan bidang warna besar dan tekstur kertas sangat halus.
+Shape language:
+- Pemain: tetesan, lingkaran, tepi membulat.
+- Enemy: duri, baji, sayap terpotong, bentuk condong ke arah serang.
+- Bahaya: bentuk tajam dan ritme berkedip jelas.
+- Interaksi aman: bentuk bulat dengan motif daun/lentera.
+Level of detail: rendah–menengah, detail terkonsentrasi pada focal point.
+Outline: kontur ink night berwarna, bukan hitam murni; sekitar 1,5–2 px pada ukuran karakter tampil.
+Lighting: ambient dingin; lentera menjadi aksen amber. Cahaya palsu memakai overlay/glow terbatas, bukan sistem lighting kompleks.
+Shadow: contact shadow elips lembut terpisah dari sprite; tidak baked pada cutout karakter.
+Texture: sapuan cat halus; tidak ada noise kasar atau tekstur fotografis.
+
+Larangan:
+- Campuran pixel art dengan ilustrasi halus.
+- Rendering glossy/plastik atau detail realistis.
+- Bloom yang menghilangkan bentuk musuh.
+- UI bergaya dashboard generik.
+- Dekorasi yang tampak seperti obstacle padahal dapat dilewati.
+
+Design space: 960 x 540 unit.
+Arena berjalan: sekitar 840 x 390 unit di tengah; batas tepat dikonfirmasi melalui layout review.
+Resolusi tekstur arena final: 1920 x 1080, ditampilkan pada design space 960 x 540.
+Semua sprite dinilai pada ukuran tampil, bukan hanya zoom besar.
+
+2.2 COLOR SYSTEM
+Palet inti delapan warna:
+Ink night    #171E2C — background terdalam, outline, teks gelap.
+Slate blue   #2D3B4B — lantai, panel gelap.
+Muted sage   #65766A — vegetasi sekunder.
+Warm ivory   #E8DFC9 — kain pemain, teks utama.
+Amber        #F2B85D — lentera, serangan, fokus utama.
+Dust plum    #79566F — enemy dan energi malam.
+Coral red    #D96B67 — damage dan bahaya.
+Pale mint    #9CC9B0 — interaksi aman dan dash siap.
+
+Distribusi target: 70% warna gelap, 20% warna sekunder, 10% aksen terang.
+Tidak menambah warna saturated baru untuk setiap fitur.
+Enemy memakai plum dengan outline gelap; telegraph menggunakan coral dan bentuk yang jelas.
+UI: panel ink/slate, teks ivory, tombol utama amber, fokus keyboard mint.
+Damage tidak dibedakan dengan warna saja: ada flash bentuk, recoil, audio, dan perubahan indikator HP.
+Kontras teks normal ditargetkan minimal 4,5:1; pasangan warna harus diukur, bukan diasumsikan aman.
+
+2.3 CHARACTER — NARA, PENJAGA LENTERA
+Identitas: penjaga kebun kecil bermantel, wajah sederhana di bawah tudung, membawa lentera bundar.
+Proporsi: sekitar 2,5 kepala; kepala/tudung 40% tinggi; mantel lebar; kaki pendek.
+Silhouette: tudung tetesan, mantel menyerupai lonceng, lentera menonjol di sisi kanan.
+Ukuran tampil: tinggi sekitar 60–64 unit; lentera termasuk lebar sekitar 52 unit.
+Foot anchor: bawah tengah; collision circle di kaki, bukan seluruh ilustrasi.
+Pose netral: sedikit membungkuk menjaga lentera; lutut tidak terkunci.
+Detail: satu jahitan besar, clasp berbentuk daun, dua mata sederhana; tidak ada ornamen kecil berlebihan.
+Ekspresi: mata netral, menyipit saat attack, tertutup saat hit/death bila hasil cutout memungkinkan.
+Animasi: gerak tubuh, kepala, arm/lantern, cloak dan feet berlapis; arah kiri/kanan dominan dengan flip seluruh rig.
+Aturan arah: tidak mengklaim delapan arah ilustrasi. Gerak vertikal memakai pose tiga-perempat yang sama dengan variasi bob/lean; divalidasi agar tidak tampak moonwalk.
+
+2.4 ENEMY DESIGN
+A — DURI LARI
+Makhluk benih berduri, tubuh baji, dua kaki/akar kecil.
+Ukuran tampil sekitar 46–50 unit; proporsi sekitar 1,5 kepala.
+Siluet condong ke arah charge; mata/inti terang kecil.
+Telegraph: tubuh merendah, duri mengarah ke depan, jalur charge terlihat.
+
+B — NGENGAT ABU
+Ngengat taman dengan sayap lebar terpotong dan inti plum.
+Ukuran tampil sekitar 62–68 unit termasuk sayap.
+Siluet horizontal, berbeda dari Duri Lari.
+Telegraph: sayap terbuka, inti menyala, lalu satu proyektil dilepas.
+
+Boss kandidat ekspansi — INDUK DURI
+Bentuk mahkota akar bundar, wajah/inti lentera padam di tengah.
+Ukuran tampil sekitar 140 unit, bukan versi enemy biasa yang hanya diperbesar.
+Tidak diproduksi atau diintegrasikan sebelum slice disetujui.
+
+2.5 ENVIRONMENT
+Background: kebun malam dengan batas pagar dan vegetasi gelap.
+Gameplay area: tanah/batu rata, detail rendah, jalur serangan selalu terbaca.
+Foreground: rumput/daun di tepian, tidak menutupi pemain atau HUD.
+Decoration: lampu taman mati, batu kecil, rumpun daun; dekorasi besar berada di luar walkable area.
+Lighting: vignette ringan, pool cahaya dekoratif kecil, glow lentera utama.
+Depth: contact shadow, y-sort actor/props relevan, foreground overlay.
+Parallax: hanya drift sangat kecil pada background menu atau kabut; tidak diperlukan saat combat dengan kamera tetap.
+Tidak ada obstacle internal pada slice pertama. Batas arena satu bentuk sederhana, ditentukan data collision terpisah dari gambar.
+
+2.6 UI/UX
+HUD:
+- Kiri atas: tiga ikon daun-lentera untuk HP, bentuk penuh/kosong jelas.
+- Tengah atas: progress malam dan label fase singkat.
+- Kanan atas: score dan tombol pause.
+- Dekat tombol dash: cooldown radial/linear, bentuk dan teks singkat bila perlu.
+Menu: arena ilustratif yang diredupkan, title berbasis teks, Play, Settings, Controls.
+Buttons: tekstur generated sebagai skin, label dirender sebagai teks tajam. Default, hover/focus, pressed, disabled jelas.
+Panels: nine-slice parchment gelap dengan motif daun minimal; tidak menyerupai panel aplikasi bisnis.
+Typography usulan: Lora untuk judul, Nunito Sans untuk UI. Lisensi dan file font harus diverifikasi; font di-host lokal. Maksimal dua family dan tiga bobot.
+Ukuran: teks UI utama minimal 18 unit pada design space; target touch memakai ukuran aktual CSS minimal 48 x 48 px.
+Iconography: bentuk sederhana dalam tile konsisten; jangan mengandalkan teks kecil di dalam ikon.
+Animation: hover 100–140 ms, press 60–90 ms, panel masuk 180–240 ms.
+Transitions: fade atmosferik 220–350 ms; input dikunci hanya selama transisi yang memang membutuhkan lock.
+Accessibility: keyboard focus, mute, reduced effects, instruksi jelas; portrait menampilkan rotate prompt tanpa memulai gameplay di belakangnya.
+
+============================================================
+3. ASSET GENERATION PIPELINE DAN MANIFEST
+============================================================
+
+PRINSIP WAJIB
+- Identitas pemain, enemy, arena, props, dan skin UI menggunakan proper generated assets, bukan bentuk Canvas sebagai pengganti art.
+- Kode tetap boleh membuat partikel, telegraph, shadow, mask, bar, layout, dan teks. Itu teknik rendering final, bukan alasan menghindari produksi aset utama.
+- Tidak ada generative sprite sheet yang otomatis dianggap siap pakai.
+- Master concept disetujui lebih dahulu; cutout diturunkan dari master tersebut.
+- Resolusi di bawah adalah spesifikasi FILE FINAL setelah crop/resize/cleanup. Tool image generation tidak menjamin output native tepat pada resolusi yang diminta.
+- PNG tidak otomatis berarti transparan. Alpha harus diperiksa/dibuat melalui cleanup.
+- Background removal dan pemisahan komponen dapat memerlukan edit generatif untuk memulihkan bagian yang tertutup. Keberhasilannya harus divalidasi.
+
+METODE
+G1: generate concept/master menggunakan master prompt, lalu review.
+G2: reference-guided edit dari master yang disetujui; bukan desain ulang acak.
+G3: crop, masking, alpha cleanup, resize, padding, pivot, color adjustment dari aset approved.
+G4: komponen pose tambahan via G2 hanya jika rig tidak dapat memberi hasil baik.
+
+Setiap file runtime memiliki metadata: source reference, prompt/version, ukuran, pivot, display scale, alpha, dan status approval. Hanya hasil approved yang masuk jalur runtime.
+
+MANIFEST A — REFERENCE, BUKAN RUNTIME
+Filename | Format/resolusi final | Transparansi | Usage | Animasi | Metode
+style-board.png | PNG 1536x1024 | Tidak | Palet, material, shape reference | Tidak | G1, kandidat dibandingkan
+nara-master.png | PNG 1024x1024 | Tidak wajib | Master karakter utuh | Tidak | G1 lalu G2
+thorn-master.png | PNG 1024x1024 | Tidak wajib | Master Duri Lari | Tidak | G1 dengan style/player reference
+moth-master.png | PNG 1024x1024 | Tidak wajib | Master Ngengat Abu | Tidak | G1 dengan references approved
+arena-master.png | PNG 1920x1080 | Tidak | Komposisi arena | Tidak | G1, review layout
+
+MANIFEST B — PLAYER RUNTIME, WAJIB SLICE
+Filename | Format/resolusi | Alpha | Usage | Animasi | Metode
+nara-body.png | PNG 256x256 | Ya | Mantel/torso utama | Lean, squash, recoil | G2+G3 dari nara-master
+nara-head.png | PNG 192x192 | Ya | Tudung/wajah | Bob, counter-rotation | G2+G3
+nara-arm-lantern.png | PNG 192x256 | Ya | Lengan dan lentera sebagai satu komponen | Swing, anticipation, attack | G2+G3
+nara-feet.png | PNG 192x128 | Ya | Sepasang kaki | Alternating steps/offset | G2+G3
+nara-eyes-closed.png | PNG 128x64 | Ya | Overlay mata pada hit/death jika cocok | Frame swap singkat | G2+G3; posisi sama dengan head
+
+Coverage state player:
+- Idle: semua komponen approved; breathing, lamp sway.
+- Movement: feet motion, body lean, cloak bob; tidak regenerate karakter tiap frame.
+- Attack: wind-up dan dorongan lantern; pulse VFX terpisah.
+- Hit: recoil, flash, eyes overlay.
+- Death: rig turun/roboh, lamp dim, dissolve leaf VFX.
+Tidak perlu lima gambar karakter utuh berbeda hanya untuk memenuhi nama state.
+
+MANIFEST C — ENEMY RUNTIME, WAJIB SLICE
+thorn-body.png | PNG 256x256 | Ya | Tubuh Duri Lari | Crouch, lunge, recoil | G2+G3
+thorn-roots.png | PNG 192x128 | Ya | Kaki/akar Duri Lari | Run cycle transform | G2+G3
+thorn-spines.png | PNG 256x192 | Ya | Duri terpisah | Flare saat wind-up | G2+G3
+moth-body.png | PNG 192x256 | Ya | Inti/tubuh Ngengat Abu | Hover dan recoil | G2+G3
+moth-wing-left.png | PNG 256x256 | Ya | Sayap kiri | Flap berporos | G2+G3
+moth-wing-right.png | PNG 256x256 | Ya | Sayap kanan | Flap berporos | G2+G3; mirror hanya jika desain simetris cocok
+moth-orb.png | PNG 128x128 | Ya | Proyektil | Scale/pulse + trail | G2+G3
+
+Coverage enemy: spawn, idle/move, anticipation, attack, hit, death memakai rig yang sama. Pose tambahan hanya jika review menunjukkan transform tidak cukup.
+
+MANIFEST D — ENVIRONMENT, WAJIB SLICE
+garden-backdrop.png | PNG 1920x1080 | Tidak | Lapisan kebun terjauh | Statis | G1/G2+G3
+arena-ground.png | PNG 1920x1080 | Ya di luar area ground | Lantai dan border, minim detail tengah | Statis | G2 dari arena master+G3
+foreground-foliage.png | PNG 1920x1080 | Ya | Bingkai daun di tepi | Sway sangat kecil opsional | G2+G3
+prop-lamp.png | PNG 256x384 | Ya | Lampu mati di luar walkable area | Glow opsional | G2+G3
+prop-stone-cluster.png | PNG 384x256 | Ya | Dekorasi batas | Statis | G2+G3
+prop-shrub.png | PNG 384x384 | Ya | Rumpun daun luar arena | Sway opsional | G2+G3
+
+Tidak perlu tileset dalam slice: satu arena authored lebih konsisten dan menghindari masalah seamless tiling. Menu memakai kembali arena, bukan meminta ilustrasi tambahan yang tidak memperkuat gameplay.
+
+MANIFEST E — UI, WAJIB SLICE
+ui-panel.png | PNG 512x512 | Ya | Nine-slice menu/result/settings | Open/close transform | G2+G3, pusat sederhana
+ui-button.png | PNG 384x128 | Ya | Nine-slice button base tanpa teks | Tint/offset state | G2+G3
+ui-hp-full.png | PNG 96x96 | Ya | HP tersedia | Impact pop | G2+G3
+ui-hp-empty.png | PNG 96x96 | Ya | HP hilang | State swap | G2 dari full+G3
+ui-pulse.png | PNG 128x128 | Ya | Ikon attack | Cooldown mask | G2+G3
+ui-dash.png | PNG 128x128 | Ya | Ikon dash | Ready pulse/cooldown | G2+G3
+ui-pause.png | PNG 96x96 | Ya | Ikon pause | Hover/pressed | G2+G3; cek keterbacaan
+ui-sound.png | PNG 96x96 | Ya | Ikon sound | Mute overlay final via vector sederhana | G2+G3
+
+Teks judul, angka, label, progress bar, focus ring tidak dihasilkan sebagai gambar generatif. Dirender agar tajam, responsif, dan dapat diakses. Nine-slice harus diperiksa supaya sudut tidak melar.
+
+MANIFEST F — VFX TEXTURES, WAJIB SLICE
+fx-pulse-ring.png | PNG 512x512 | Ya | Ring serangan, pusat kosong | Expand/fade 120–180 ms | G2+G3
+fx-leaf-speck.png | PNG 64x64 | Ya | Daun/serpihan kecil | Particle emitter | G2+G3
+fx-soft-glow.png | PNG 256x256 | Ya | Lantern glow dan mote | Opacity/scale | G2+G3
+fx-impact.png | PNG 256x256 | Ya | Impact brush burst | Rotate/scale/fade | G2+G3
+
+Telegraph collision-critical memakai bentuk runtime presisi dengan tekstur/warna yang konsisten. Bentuk lingkaran sederhana untuk telegraph bukan placeholder karakter/arena.
+
+MANIFEST G — BOSS, CADANGAN PHASE 2/3; BUKAN SLICE
+boss-matriarch-master.png | PNG 1536x1536 | Tidak wajib | Reference Induk Duri | Tidak | G1/G2
+boss-core.png | PNG 512x512 | Ya | Tubuh/inti boss | Idle, recoil | G2+G3
+boss-crown.png | PNG 768x512 | Ya | Mahkota akar | Anticipation, phase flare | G2+G3
+boss-root-left.png | PNG 512x512 | Ya | Appendage kiri | Attack | G2+G3
+boss-root-right.png | PNG 512x512 | Ya | Appendage kanan | Attack | G2+G3
+boss-core-cracked.png | PNG 512x512 | Ya | State fase lanjut | Frame swap | G2+G3 dari core yang sama
+
+Boss coverage: idle via rig breathing; attack via root poses; hit via recoil/flash; phase transition via core swap+crown flare; death via collapse+dissolve. Kebutuhan frame ekstra baru diputuskan setelah rig test, bukan diasumsikan beres.
+
+MANIFEST AUDIO, WAJIB SLICE
+Format runtime usulan WAV mono 44,1 kHz untuk SFX pendek; musik/ambient compressed jika encoder tersedia. Bukan hasil generate_image.
+ui-confirm.wav — 0,1–0,2 s — sintesis lembut.
+ui-back.wav — 0,1–0,2 s — nada turun.
+pulse-cast.wav — 0,2–0,35 s — bell transient + airy layer.
+dash.wav — 0,15–0,25 s — filtered whoosh.
+enemy-hit-01.wav / enemy-hit-02.wav — 0,1–0,2 s — dua variasi impact.
+player-hurt.wav — 0,25–0,4 s — impact jelas, tidak menusuk.
+thorn-windup.wav — sekitar 0,35 s — rustle rising.
+moth-cast.wav — sekitar 0,3 s — flutter + small chime.
+enemy-death.wav — sekitar 0,3 s — soft crumble.
+victory.wav — 1–2 s — motif pendek.
+defeat.wav — 1–2 s — motif turun.
+ambience-loop.ogg atau .wav — 15–30 s — drone/angin sintetis halus.
+
+Musik penuh bukan dependency kelulusan slice; soundscape tetap harus terasa sengaja dirancang. Tool generasi musik khusus tidak tersedia. Musik lebih kompleks memerlukan aset berlisensi atau tool lain yang disetujui.
+
+============================================================
+4. IMAGE GENERATION STRATEGY
+============================================================
+
+MASTER STYLE PROMPT
+"Create a production game-art asset for LENTERA: The Last Garden. Cohesive handcrafted 2D storybook gouache illustration, restrained paper texture, large readable painted shapes, top-down three-quarter orthographic game perspective, no perspective convergence. Rounded teardrop shapes for the guardian, thorn wedges and clipped wing shapes for hostile creatures. Restrained palette centered on ink night #171E2C, slate #2D3B4B, sage #65766A, ivory #E8DFC9, amber #F2B85D, plum #79566F, coral #D96B67, mint #9CC9B0. Soft cool ambient light from upper left; warm amber only from lantern-related elements. Colored ink-night contour, visually equivalent to approximately two pixels at final character size. Low-to-medium detail, readable at thumbnail size, consistent material rendering, no glossy 3D, no photorealism, no pixel art, no tiny ornament, no text, no watermark. Preserve the approved reference design rather than inventing a new style. Follow the asset-specific framing and background instructions."
+
+Catatan: hex adalah arahan visual, bukan jaminan pixel output tepat. Palet diperiksa dan disesuaikan setelah generation. Prompt saja tidak menjamin konsistensi.
+
+PLAYER PROMPT — ditambahkan ke master
+"Nara, a small lantern garden keeper, two-and-a-half-head proportions, teardrop hood occupying forty percent of body height, bell-shaped ivory cloak with one sage clasp, short feet, simple two-eye face, round amber lantern carried on the right. Neutral three-quarter standing pose, both feet visible, complete silhouette with generous padding. No ground plane, no cast shadow, no scene decoration. Match approved Nara reference exactly. For cutout requests, render only the specified component and preserve its shape, scale and attachment location. Use a flat removable background color absent from the asset if clean alpha is unavailable."
+
+ENEMY PROMPT
+"Create [Thorn Runner / Ash Moth] from its approved master. Thorn Runner: compact plum seed creature, forward wedge silhouette, three major thorn groups, two root feet, no extra limbs. Ash Moth: small vertical core, two broad clipped wings, clear horizontal silhouette. Keep the same three-quarter camera and painted contour as Nara. Hostile identity comes from plum and angular shapes, not excessive spikes or detail. Isolated complete cutout, no baked shadow or environment. For component edits preserve the original design and overlap margins."
+
+BOSS PROMPT — hanya setelah ekspansi disetujui
+"The Thorn Matriarch, a broad circular root crown surrounding a dim lantern-like core, two major articulated root appendages, imposing but readable silhouette. Same rendering and camera as approved enemies. Distinct anatomy, not a scaled-up ordinary enemy. Closed shapes suitable for layered cutouts. No background or baked shadow. Preserve the approved crown proportions and core placement across all edits."
+
+ENVIRONMENT PROMPT
+"A single authored nighttime garden arena, 16:9 composition, top-down three-quarter orthographic view. Quiet slate stone and soil in the playable center, low contrast and sparse detail. Dark sage foliage, broken garden lamps and boundary stones concentrated at the perimeter. No characters, no text, no central obstacles, no fake exits. Preserve an uncluttered center and reserved HUD margins. Cool upper-left ambient light, restrained amber accents only at designated garden lights. Do not paint combat telegraphs or gameplay glow into the ground."
+
+PROPS PROMPT
+"An isolated [garden lamp / boundary stone cluster / shrub] matching the approved arena reference. Same camera elevation, scale cues, soft upper-left light, muted contrast and contour thickness. Full silhouette, no floor, no baked cast shadow, ample padding. Designed for placement outside the walkable center."
+
+UI PROMPT
+"A restrained handcrafted interface asset for the same night-garden game. Front-facing flat UI view, deliberately NOT the world camera perspective. Ink/slate panel with subtle painted edge and minimal leaf motif, ivory/amber accents. Clean symmetric geometry, quiet stretchable center for nine-slice, generous safe margins. No text, no pseudo-writing, no dashboard styling, no glossy bevel, no dense decoration. Match the approved icon contour and material."
+
+KONSISTENSI YANG HARUS DIJAGA
+Proporsi: master character dan ratio sheet tetap; komponen dibandingkan dengan silhouette overlay.
+Lighting: arah ambient sama; warm light hanya untuk sumber yang ditentukan; shadow dipisah.
+Palette: swatch reference selalu disertakan; saturated outlier dikoreksi.
+Line style: periksa pada ukuran tampil; ketebalan outline dinormalisasi bila perlu.
+Rendering: referensi approved diteruskan; tidak memulai setiap aset dari prompt tanpa gambar referensi.
+Visual language: bentuk bulat untuk aman/pemain, tajam untuk ancaman; motif daun/lentera di UI.
+Perspective: UI front-facing; world tiga-perempat. Perbedaan disengaja, bukan style drift.
+
+REVIEW LOOP WAJIB
+1. Buat minimal dua kandidat awal untuk style/player anchor, bukan langsung menerima kandidat pertama.
+2. Evaluasi siluet, proporsi, palet, perspektif, lighting, alpha feasibility, keterbacaan thumbnail.
+3. Tandai masalah spesifik; edit berbasis reference jika desain dasarnya baik, regenerate jika fondasinya salah.
+4. Bandingkan kandidat berdampingan pada ukuran gameplay dan di atas latar arena.
+5. Pilih satu master approved, catat versi dan alasan.
+6. Baru produksi aset berikutnya; setiap keluarga aset memiliki checkpoint review.
+7. Dua siklus perbaikan yang gagal memicu peninjauan desain/pipeline, bukan menerima aset buruk karena terlanjur dibuat.
+
+Gate alpha: tidak ada kotak background, pinggir chroma, halo, atau tepi terpotong pada latar gelap/terang.
+Gate rig: sendi tidak berlubang; bagian tersembunyi cukup panjang untuk overlap.
+Fallback jika rig gagal: reference-guided pose tambahan 2–4 frame untuk gerakan kritis, atau sederhanakan desain dengan persetujuan. Bukan mengganti karakter final dengan lingkaran Canvas.
+
+============================================================
+5. ANIMATION STRATEGY
+============================================================
+
+PENDEKATAN UTAMA
+Layered/skeletal-like rig berbasis sprite containers dan pivot; bukan mengklaim tersedia rigging tool/editor khusus. Semua komponen visual berasal dari approved generated art. Tidak memerlukan Spine runtime.
+
+PLAYER
+Idle: transform breathing 1,5–2 s, head counter-motion, lantern sway kecil. Hindari semua bagian bergerak sinkron.
+Movement: siklus langkah sekitar 320–420 ms sesuai speed; feet offset, body bob 1–2 unit, lean 4–7 derajat. Contact shadow relatif stabil.
+Attack: 70 ms anticipation, pelepasan cepat, 140 ms recovery pose. Lantern memimpin gerak; badan bereaksi setelahnya.
+Hit: recoil 80–120 ms, flash singkat, blink invulnerability; tidak melakukan tween yang menggeser hitbox tanpa aturan.
+Death: collapse 350–500 ms, lantern padam, daun mengurai; actor tidak langsung menghilang.
+Dash: lean dan stretch maksimum sekitar 10%, afterimage 2–3 sample, trail 180 ms. Tidak merusak proporsi secara berlebihan.
+
+DURI LARI
+Idle/move: root stepping dan body bob kecil.
+Wind-up: crouch 350 ms, thorn flare, arah charge dikunci.
+Charge: lunge terarah 280 ms.
+Recovery: 450 ms dengan pose kelelahan.
+Hit/death: recoil, compression, pecah menjadi sedikit serpihan daun; tanpa gore.
+
+NGENGAT ABU
+Hover: body naik turun 2–3 unit, shadow scale kebalikan.
+Wings: rotasi berporos 250–350 ms, fase kiri/kanan selaras tetapi tidak kaku.
+Cast: sayap terbuka 500 ms, inti glow meningkat, projectile dilepas di akhir.
+Hit/death: wing fold dan turun sebelum dissolve.
+
+BOSS CADANGAN
+Idle layered rig, root attacks via pivot/keyframe, phase change via controlled sprite swap dan VFX. Jika bentuk membutuhkan deformasi kompleks, evaluasi ulang scope sebelum produksi.
+
+VFX
+Pulse: generated ring texture di-expand, mask/fade runtime.
+Impact: texture burst, 6–10 partikel, knockback, hit-stop terbatas.
+Dash: afterimages dari sprite approved, bukan gambar generatif baru.
+Camera shake: maksimum 2–3 design units untuk hit biasa, opsi reduced effects.
+Shader: opsional untuk tint/flash; slice tidak bergantung pada custom shader mahal.
+
+Aturan: gameplay timing menjadi sumber kebenaran; visual tidak boleh menyebabkan damage muncul sebelum telegraph selesai. Animasi harus dibaca dalam rekaman normal dan slow playback, bukan dinilai dari screenshot saja.
+
+============================================================
+6. GAMEPLAY SPECIFICATION KONKRET
+============================================================
+
+6.1 TINDAKAN PER DETIK
+Pemain melihat posisi dua tipe musuh, mencari celah, bergerak mendekat ke target, pulse saat target dalam radius, lalu memilih berjalan keluar atau memakai dash. Serangan tidak memerlukan aiming; tantangan ada pada jarak, waktu, dan rute keluar.
+
+Keputusan:
+- Menyerang satu musuh sekarang atau mengumpulkan dua musuh untuk satu pulse?
+- Memakai dash agresif atau menyimpannya untuk menghindari charge?
+- Mengejar Ngengat yang menembak atau menyelesaikan Duri Lari yang dekat?
+- Berdiri di pusat yang fleksibel atau tepi yang membatasi arah datang musuh?
+
+6.2 PLAYER BASELINE
+HP: 3.
+Move speed: 210 unit/detik; diagonal dinormalisasi.
+Collision circle: radius 12 unit di foot anchor.
+Pulse: radius 100 unit, radial 360 derajat.
+Wind-up pulse: 70 ms; expansion/active window sekitar 100 ms.
+Damage: 1 per target per cast; target tidak boleh terkena berulang karena overlap beberapa frame.
+Cooldown pulse: 620 ms dari awal cast; satu input buffer maksimum 100 ms.
+Movement saat pulse: 85% normal selama anticipation, kembali normal setelah release.
+Dash: 150 ms, kecepatan 560 unit/detik, cooldown 1,2 s.
+Invulnerability dash: 100 ms pertama; visual dan tutorial harus jelas.
+Arah dash: current movement; bila diam, last nonzero direction. Spawn facing awal ke bawah.
+Attack dan dash tidak dapat aktif bersamaan. Dash dapat membatalkan anticipation sebelum pulse keluar; cast yang dibatalkan tidak menghasilkan damage, tetapi cooldown tetap terpakai untuk menghindari exploit.
+Damage immunity setelah hit: 900 ms, dengan feedback blink yang tidak menyilaukan.
+Tidak ada stamina, ammo, consumable, atau auto-heal selama combat.
+
+6.3 ENEMY A — DURI LARI
+HP: 2.
+Approach speed: 75–90 unit/detik.
+Trigger charge: jarak sekitar 160 unit dan cooldown siap.
+Telegraph: 350 ms, arah dikunci pada awal telegraph; marker jalur terlihat.
+Charge: 280 unit/detik selama 280 ms, tidak homing setelah dikunci.
+Recovery: 450 ms, memberi kesempatan menyerang.
+Damage: 1 pada kontak charge aktif.
+Kontak tubuh saat approach bukan damage; separation mencegah stacking berlebihan.
+Knockback dari pulse: sekitar 30 unit, tidak menembus batas arena.
+
+6.4 ENEMY B — NGENGAT ABU
+HP: 2.
+Move speed: sekitar 60 unit/detik; menjaga jarak 190–250 unit.
+Telegraph cast: 500 ms.
+Projectile: satu bola arah posisi pemain pada release, speed 145 unit/detik, radius sekitar 8 unit, lifetime maksimal 4 s.
+Attack interval: sekitar 2,4 s, variasi kecil agar tidak serempak.
+Damage projectile: 1.
+Pulse dapat menghapus projectile yang bersentuhan dengan ring aktif; feedback berbeda dari damage enemy.
+Tidak ada contact damage dari tubuh ngengat.
+
+6.5 REWARD DAN REPLAY
+Duri Lari: 100 poin; Ngengat: 150 poin.
+Victory bonus: 300 per HP tersisa.
+Best score lokal; satu hasil run ringkas berisi score, survived time, dan damage taken.
+Reward langsung: impact jelas, musuh terlempar, ruang aman terbuka, audio konfirmasi.
+Tidak ada meta-progression pada slice. Replay berasal dari penguasaan timing, cleaner run, dan rekor.
+Jika replay ternyata lemah, tuning encounter didahulukan sebelum menambahkan upgrade/shop.
+
+6.6 DIFFICULTY DAN ENCOUNTER
+Timer aktif berhenti saat pause, loading, focus loss, game over, dan victory.
+0–15 s: satu Duri Lari untuk memperkenalkan telegraph; tutorial overlay nonblocking singkat.
+15–45 s: Duri Lari bertambah; maximum active enemy 3.
+45–90 s: Ngengat diperkenalkan; maximum active 5, maksimal 2 Ngengat.
+90–150 s: kombinasi lebih rapat; maximum active 7, maksimal 3 Ngengat.
+Spawn interval baseline turun dari sekitar 4,5 s menjadi 2,6 s; final cadence dituning melalui playtest.
+Spawn warning: 800 ms, di zona tepi, minimal 160 unit dari pemain. Jika tidak ada titik aman, spawn ditunda, bukan dipaksakan.
+HP enemy dan durasi minimum telegraph tidak dinaikkan/dipangkas sembarangan. Kesulitan terutama dari kombinasi dan posisi.
+Director membatasi charge serentak awalnya satu; fase akhir maksimal dua dengan start telegraph berjarak minimal 250 ms.
+Active projectile cap: 12. Spawn/event yang gagal tidak menumpuk menjadi burst setelah pause.
+
+6.7 WIN / LOSE
+Menang: timer aktif mencapai 150 s, spawning berhenti, seluruh enemy tersisa dikalahkan. Projectile sisa dibersihkan dengan fade aman saat victory dikonfirmasi.
+Kalah: HP menjadi 0; damage/input combat dimatikan, death animation selesai, result panel muncul.
+Jika pemain dan enemy terakhir mati dalam simulation step yang sama, kekalahan pemain memiliki prioritas. Aturan eksplisit untuk menghindari race condition.
+Restart: run baru dengan HP, timer, score, enemy, projectile, cooldown, audio loop, dan input buffer bersih.
+
+============================================================
+7. VERTICAL SLICE — SCOPE DAN DELIVERABLE
+============================================================
+
+WAJIB ADA
+- Nara playable menggunakan generated art approved.
+- Movement, pulse, dash, damage, death.
+- Dua enemy dengan perilaku berbeda dan telegraph.
+- Satu arena generated lengkap dengan background, ground, foreground, props.
+- Layered animation; bukan sprite diam yang hanya meluncur.
+- VFX pulse, hit, dash, spawn, enemy death.
+- HUD HP, progress, score, dash readiness, pause.
+- Main menu, settings sederhana, controls, pause menu.
+- SFX lengkap dan ambient soundscape.
+- Game over, victory, restart.
+- Basic difficulty director selama 150 s plus cleanup.
+- Transitions yang selesai dan konsisten.
+- Desktop keyboard/mouse dan touch landscape secara fungsional; perangkat fisik tetap memerlukan verifikasi pengguna.
+- Local best score dan settings.
+- Production build dan instruksi menjalankan setelah development diizinkan.
+
+TIDAK MASUK SLICE
+Boss, enemy ketiga, map kedua, narrative cutscene, upgrade, inventory, shop, endless mode, leaderboard online, gamepad, localization lengkap.
+
+URUTAN INTERNAL SLICE
+A. Asset feasibility gate: satu karakter berlapis dan satu contoh enemy harus dapat dianimasikan dengan baik.
+B. Movement + pulse + satu enemy menggunakan art approved.
+C. Enemy kedua + encounter pacing.
+D. Menu/HUD/audio/transitions lengkap.
+E. Review visual dan game feel, perbaikan, regression test.
+
+Debug shapes boleh dipakai sementara di mode developer untuk menguji collision, tetapi tidak dianggap deliverable slice dan tidak boleh tampil pada build review normal.
+
+============================================================
+8. TECHNICAL ARCHITECTURE
+============================================================
+
+REKOMENDASI: PHASER + TYPESCRIPT + VITE
+Alasan Phaser: game ini membutuhkan scene lifecycle, sprite containers, tween, input, audio, scaling, camera effects, dan banyak objek 2D. Menggunakan renderer saja akan menambah pekerjaan fondasi tanpa manfaat jelas.
+TypeScript: membantu state, data tuning, event contracts, dan refactor.
+Vite: dev server dan build static yang ringan.
+Tidak perlu React, backend, Redux, Matter.js, atau engine physics kompleks untuk scope ini.
+Versi dependency dipilih setelah repo diperiksa, lalu dipin melalui lockfile.
+
+FOLDER STRUCTURE USULAN
+/src
+  /app          bootstrap, sizing, overlay bridge
+  /scenes       Boot, Preload, Menu, Game, Results
+  /entities     Player, ThornRunner, AshMoth, Projectile
+  /systems      Combat, Collision, SpawnDirector, Effects, Audio
+  /animation    RigDefinition, RigAnimator, state poses
+  /data         player, enemies, encounter, palette, asset manifest
+  /ui           HUD, menus, settings, touch controls
+  /input        unified input adapter
+  /storage      settings, best score, schema validation
+  /types        shared contracts
+/assets
+  /characters/nara
+  /enemies/thorn-runner
+  /enemies/ash-moth
+  /environment/garden
+  /ui
+  /vfx
+  /audio/sfx
+  /audio/ambient
+  /fonts
+/art-source     hanya master approved dan metadata yang perlu disimpan
+/docs           design, asset provenance, run/build, test reports
+/tests
+  /unit
+  /integration
+  /e2e
+/index.html
+
+Struktur disesuaikan dengan repo existing, bukan menimpa tanpa audit.
+Rejected generations dan scratch tidak masuk jalur runtime atau Git. Build output, node_modules, dan cache tidak di-commit tanpa alasan. Aset besar diperiksa terhadap batas ukuran repository/persistensi; Git LFS hanya jika perlu dan deployment mendukung.
+
+ASSET STRUCTURE
+Asset manifest menetapkan key, path import, type, dimensions, pivot, scale.
+Path diolah melalui Vite/base URL agar deployment subpath tidak rusak. Tidak memakai URL localhost pada kode browser.
+Texture atlas dibuat setelah aset stabil jika pengukuran menunjukkan manfaat. Frame source tetap terorganisir; atlas bukan alasan mengubah pivot tanpa metadata.
+
+SCENE / STATE
+Boot: config dan storage validation.
+Preload: asset load, progress, error state yang berguna.
+Menu: title, controls/settings, start.
+Game: run lifecycle dengan state intro/running/paused/dying/victory/defeat.
+Results: ringkasan dan restart/menu.
+Pause tidak membuat Game scene kedua. Exit/restart selalu melepas listener/timer/tween/objects milik run lama.
+
+ENTITY ARCHITECTURE
+Komposisi sederhana, bukan ECS berlebihan:
+- logical state/position;
+- collider;
+- actor view/rig;
+- state machine;
+- health dan attack data.
+View tidak menjadi sumber truth untuk collision. Enemy state: spawning, approach/hover, telegraph, attack, recover, hit, dead.
+
+COLLISION DAN SIMULATION
+Custom circle/segment checks untuk arena, pulse, enemy, projectile; tidak perlu rigid-body solver.
+Fixed-step simulation 60 Hz dengan batas catch-up, visual interpolation bila diperlukan.
+Projectile/charge menggunakan swept check atau substep yang terukur agar tidak menembus target pada frame lambat.
+Damage queue diproses dengan aturan priority/deduplication; satu cast memiliki ID untuk mencegah damage berulang.
+Separation enemy sederhana, tidak memerlukan pathfinding karena arena tanpa obstacle internal.
+
+DATA ARCHITECTURE
+Nilai speed, radius, HP, cooldown, telegraph, score, spawn schedule ada pada config typed, bukan tersebar dalam kode.
+PRNG seeded untuk test encounter; production dapat memakai seed yang dicatat untuk reproduksi bug.
+Tidak membuat editor level custom pada slice.
+
+AUDIO ARCHITECTURE
+Satu AudioManager dengan bus master/SFX/ambience; settings tersimpan.
+Unlock audio melalui interaksi pengguna.
+Variasi pitch sangat kecil untuk SFX tertentu, batas polyphony, gain cap.
+Loop ambience tunggal; restart tidak menumpuk loop.
+Pause/focus loss meredam atau suspend sesuai kebijakan; browser dapat mengharuskan gesture resume.
+Speech generation tidak diperlukan.
+
+SAVE ARCHITECTURE
+localStorage untuk versi schema, settings, best score.
+Validasi tipe/range, migrasi ringan, fallback default jika corrupt/storage denied.
+Tidak menyimpan state run di tengah pertempuran.
+Save lokal bukan anti-cheat dan bisa hilang jika data browser dibersihkan.
+
+UI ARCHITECTURE
+Phaser untuk dunia game/VFX; HTML/CSS overlay untuk menu, teks HUD, buttons, dan accessibility bila koordinasi scale tetap sederhana.
+Generated skins/icons dipakai di overlay; tidak membuat dua sistem menu paralel.
+Unified input adapter mencegah klik tombol UI ikut menyerang dunia game.
+Focus management dan pointer ownership harus eksplisit.
+
+RESPONSIVE
+Canvas FIT dengan letterbox yang disengaja; arena/world units tidak berubah berdasarkan ukuran browser.
+HUD dan touch overlay mengikuti safe-area dan actual CSS pixels.
+Portrait: rotate prompt dan pause; tidak mengecilkan game sampai kontrol tak terbaca.
+Target utama desktop 1280x720 ke atas dan ponsel landscape sekitar 844x390 CSS px. Viewport lain harus diuji, bukan diasumsikan aman.
+
+TESTING ARCHITECTURE
+Vitest atau runner setara untuk logika murni.
+Integration harness untuk simulation/state reset dengan seed tetap.
+Playwright jika browser/dependency berhasil tersedia untuk browser smoke, input, screenshots, error/network capture.
+Test-only API/harness dibatasi pada mode test, bukan expose cheats pada produksi.
+
+PREVIEW / DEPLOYMENT
+Dev server bind 0.0.0.0 dan izinkan preview host yang diberikan environment.
+Production static build dapat di-host di platform seperti GitHub Pages; base path disesuaikan target.
+Tidak membutuhkan server backend atau CDN runtime.
+Live preview bukan hosting produksi permanen.
+
+============================================================
+9. TESTING PLAN — SEMUA BELUM DIJALANKAN
+============================================================
+
+FUNCTIONAL
+[ ] Cold start mencapai menu, progress loading benar.
+[ ] Play memulai tepat satu run.
+[ ] WASD/panah bekerja; diagonal tidak lebih cepat.
+[ ] Key release, focus loss, dan pointer cancel tidak membuat input tersangkut.
+[ ] Pulse mengikuti cooldown, radius, active window, damage-once.
+[ ] Pulse menghapus projectile hanya pada kontak aktif yang valid.
+[ ] Dash mengikuti arah/cooldown/i-frame yang ditentukan.
+[ ] Attack/dash cancellation sesuai spesifikasi.
+[ ] Dua enemy masuk state yang benar dan telegraph terbaca.
+[ ] Tidak ada damage sebelum attack aktif.
+[ ] Collision batas, charge, projectile diuji pada speed dan frame time berbeda.
+[ ] HP, immunity, death, victory priority benar.
+[ ] Spawn aman, cap enemy/projectile dipatuhi.
+[ ] Pause menghentikan simulation dan timer, bukan sekadar membuka panel.
+[ ] Menu/settings tidak memicu input combat di belakang overlay.
+[ ] Restart menghapus semua state run lama.
+[ ] Save corrupt/storage denied tidak membuat game gagal mulai.
+[ ] Touch stick + attack/dash mendukung multitouch, pointercancel, safe area.
+
+VISUAL
+[ ] Semua aset runtime merupakan versi approved.
+[ ] Tidak ada placeholder atau debug geometry pada mode normal.
+[ ] Alpha dicek di latar gelap dan terang; tidak ada halo/kotak.
+[ ] Proporsi, palette, lighting, outline konsisten.
+[ ] Rig tidak memiliki gap atau bagian tubuh terpotong.
+[ ] Animasi dinilai realtime dan playback lambat.
+[ ] Telegraph berada pada posisi collision sebenarnya.
+[ ] HUD/teks terbaca pada 960x540, 1280x720, 1920x1080, dan mobile landscape.
+[ ] DPR 1 dan 2 tidak menyebabkan blur/ukuran salah.
+[ ] Panel nine-slice, icon scaling, focus ring benar.
+[ ] Foreground tidak menutupi bahaya/pemain.
+[ ] Reduced effects mengurangi shake/flash tanpa menghilangkan informasi.
+[ ] Transitions tidak meninggalkan frame kosong atau input lock permanen.
+
+AUDIO
+[ ] Tidak ada autoplay error yang tidak ditangani.
+[ ] Mute/volume persisten dan bekerja pada semua bus.
+[ ] Attack spam tidak clipping atau menumpuk suara berlebihan.
+[ ] Ambient loop tidak click/pop atau berlipat setelah restart.
+[ ] Pause/resume/focus loss tidak membuat audio hilang permanen.
+[ ] Pengguna melakukan listening review; analisis teknis bukan pengganti mendengar langsung.
+
+TECHNICAL
+[ ] Install reproducible dengan lockfile.
+[ ] Typecheck, unit test, integration test, production build lulus.
+[ ] Browser runtime tidak memiliki uncaught exception/unhandled rejection.
+[ ] Console tidak memiliki error game yang tidak ditangani.
+[ ] Semua aset berhasil load/decode; tidak ada request 404 game.
+[ ] Production preview diuji, bukan dev server saja.
+[ ] Deployment subpath diuji.
+[ ] 10 restart tidak menambah scene/listener/timer/loop audio.
+[ ] Soak test gameplay/restart sekitar 20 menit.
+[ ] Context loss/resize/focus return ditangani secara masuk akal.
+
+PERFORMANCE
+Target awal, bukan hasil:
+- 60 fps pada desktop baseline yang akan dicatat setelah pengukuran.
+- P95 frame time gameplay sekitar <=20 ms pada desktop baseline, di luar loading dan transisi.
+- Mobile target >=30 fps stabil; preferensi 60 fps. Klaim perangkat fisik hanya setelah pengujian nyata.
+- Total active enemy <=7, projectile <=12, particles sekitar <=180, afterimages dibatasi.
+- Initial transfer budget <=10 MB sebagai target; bukan izin mengorbankan visual sembarangan.
+- Tidak ada pertumbuhan live object count antar-run. Heap ditinjau setelah warm-up/GC bila pengukuran tersedia; noise GC tidak dianggap otomatis sebagai leak.
+
+BROWSER AUTOMATION
+Jika Playwright tersedia: desktop Chromium wajib; Firefox/WebKit dicoba sesuai ketersediaan binary. WebKit automation bukan bukti iOS Safari fisik lulus.
+Skenario: load menu -> start -> move -> attack -> pause/resume -> force deterministic death di test harness -> restart -> inspect errors/network/state.
+Screenshot per viewport dan state penting disimpan sebagai bukti test jika dijalankan.
+Jika automation gagal disiapkan, laporkan blocker dan daftar test belum terlaksana. Jangan mengganti status menjadi tested hanya karena build sukses.
+
+PLAYTEST MANUSIA
+Minimal review pengguna terhadap:
+- Apakah pulse terasa memuaskan?
+- Apakah setiap damage terasa dapat dipahami?
+- Apakah dash responsif?
+- Apakah karakter tetap terbaca saat ramai?
+- Apakah ingin restart setelah kalah?
+Idealnya 3–5 penguji; jika tidak tersedia, satu pengguna tetap memberi feedback, tetapi hasil tidak digeneralisasi sebagai riset pemain.
+
+============================================================
+10. QUALITY BAR DAN ACCEPTANCE CRITERIA
+============================================================
+
+SLICE BELUM SELESAI JIKA SALAH SATU BERIKUT TERJADI
+1. Pemain/enemy/arena memakai placeholder atau aset belum approved.
+2. Asset memiliki perbedaan perspektif, outline, palette, atau rendering yang jelas pada ukuran gameplay.
+3. Ada alpha halo, bagian terpotong, gap pada rig, atau sprite meluncur tanpa animation feedback.
+4. Attack dapat memberi damage beberapa kali per cast tanpa sengaja.
+5. Damage terjadi sebelum telegraph, saat pause, atau setelah game over.
+6. Input tersangkut setelah kehilangan fokus atau melepaskan touch di luar tombol.
+7. Restart meninggalkan enemy, timer, score, cooldown, listener, atau audio run lama.
+8. UI overflow, teks tidak terbaca, tombol touch di bawah 48 CSS px, atau overlay memicu serangan di belakangnya.
+9. Ada uncaught runtime error, missing asset, decode failure, atau request 404 milik game.
+10. Build produksi gagal atau hanya berjalan di dev server.
+11. Audio clipping, loop menumpuk, atau mute tidak bekerja.
+12. Tidak ada kemenangan/kekalahan/restart yang lengkap.
+13. Pacing menyebabkan spawn tidak adil atau damage tidak bisa dibaca.
+14. Performa di baseline yang diuji tidak mencapai target dan masalah tidak diselesaikan atau scope tidak disepakati ulang.
+15. Hasil test belum dijalankan tetapi dilaporkan lulus.
+
+KRITERIA LULUS TERUKUR
+- Satu run lengkap dari menu hingga victory dapat dimainkan tanpa intervensi developer.
+- Satu run kalah dan 10 siklus restart berhasil tanpa state leak yang terdeteksi.
+- Kedua enemy memiliki telegraph dan counterplay berbeda.
+- Pergerakan merespons pada simulation tick berikutnya setelah input diterima; target ini diperiksa secara teknis, tidak diklaim sebagai latency hardware terukur tanpa alat.
+- Semua aset wajib dari manifest tersedia, approved, terpakai, dan tidak ada referensi yatim yang menyebabkan load failure.
+- Menu, HUD, pause, settings, results memiliki state interaksi lengkap dan konsisten.
+- Functional core, production build, console/network checks lulus pada browser baseline yang dicatat.
+- Performance report mencantumkan environment, viewport, durasi test, dan hasil, bukan hanya kata smooth.
+- Bug blocker/critical: 0. Bug major yang merusak core loop: 0. Minor yang tersisa dicatat dan harus disetujui untuk ditunda.
+
+KRITERIA KUALITATIF DENGAN SIGN-OFF
+- Pengguna menyetujui character design dan satu screenshot gameplay sebelum produksi aset diperluas.
+- Pengguna menyetujui animasi/pulse/dash melalui video atau live play, bukan screenshot saja.
+- Review menyatakan alasan damage bisa dimengerti dan core loop cukup menarik untuk dicoba ulang.
+- Jika game feel belum memuaskan, slice belum diterima meskipun checklist teknis hijau.
+
+STATUS APPROVAL
+Asset approval, gameplay feel approval, technical test pass, dan release approval adalah gate berbeda. Tidak boleh satu gate digunakan untuk mengklaim semuanya selesai.
+
+============================================================
+11. DEVELOPMENT PHASES DAN OUTPUT
+============================================================
+
+PHASE 0 — PRE-PRODUCTION
+Output: GDD disetujui, scope/non-goals, art guide, manifest, acceptance criteria, target perangkat/deployment.
+Setelah izin development: audit repo dan toolchain; uji feasibility generation/alpha/rig; style board dan master anchor approved.
+Gate: arah visual dan scope diterima, pipeline aset terbukti layak. Tidak langsung memproduksi puluhan aset.
+
+PHASE 1 — VERTICAL SLICE
+Output: satu arena, Nara, dua enemy, seluruh core loop, art generated final-quality untuk konten slice, animation/VFX/UI/audio, menu hingga results, tests dasar.
+Gate: seluruh acceptance slice yang relevan lulus dan pengguna menyetujui game feel.
+Tidak menunggu Phase 3 untuk mengganti placeholder slice.
+
+PHASE 2 — GAMEPLAY EXPANSION
+Hanya dimulai jika slice diterima dan pengguna meminta ekspansi.
+Output kandidat: satu boss dengan dua pola utama, encounter terakhir yang lebih terstruktur, atau satu enemy tambahan. Pilih paling bernilai; jangan otomatis mengambil semuanya.
+Gate: tambahan memperkuat core loop, bukan sekadar menambah menu/sistem.
+
+PHASE 3 — ASSET PRODUCTION
+Output: aset tambahan untuk konten ekspansi yang disetujui, konsolidasi atlas, provenance, audio tambahan.
+Art dasar telah diproduksi di Phase 1. Phase 3 bukan alasan mempertahankan placeholder sampai akhir.
+Gate: style drift tidak muncul; seluruh aset baru melewati review yang sama.
+
+PHASE 4 — POLISH
+Output: tuning input, hit feedback, animasi, telegraph, transitions, mixing, typography, accessibility, responsive refinements.
+Polish sudah dilakukan sejak slice; phase ini menyatukan kualitas seluruh konten.
+Gate: review gameplay dan visual menyeluruh.
+
+PHASE 5 — TESTING
+Output: regression suite, browser/device matrix, bug list dengan severity, evidence test, manual playtest feedback.
+Testing tetap berjalan di phase sebelumnya; ini release-candidate verification.
+Gate: tidak ada blocker/critical atau major core-loop bug.
+
+PHASE 6 — OPTIMIZATION
+Output: profiling before/after, particle/object budgets, kompresi aset, loading review, leak fixes, performance report.
+Tidak melakukan optimasi spekulatif yang merusak kode/visual tanpa pengukuran.
+Gate: target baseline tercapai atau trade-off disetujui secara eksplisit.
+
+PHASE 7 — FINAL BUILD
+Output: production build, deployment configuration, README run/build, asset/license notes, known issues, release checklist.
+Gate: production smoke test lulus pada target hosting/base path; artefak tidak berisi debug mode/secret.
+
+PHASE 8 — GITHUB RELEASE
+Output sesuai izin pengguna: review git diff, commit, push branch sesi, pull request, release notes; GitHub Release/tag hanya jika diminta.
+Semua pekerjaan tetap pada arena/01a081aa-new-game. Tidak membuat atau berpindah branch lain.
+Merge/deployment mengikuti kewenangan dan persetujuan pengguna. Live preview tidak dianggap otomatis sebagai production release.
+
+Tidak memberi estimasi jam pasti sebelum audit repo dan feasibility gate. Progress dinilai per output/gate, bukan janji one-shot.
+
+============================================================
+12. RISIKO, MITIGASI, DAN KEPUTUSAN YANG DIBUTUHKAN
+============================================================
+
+RISIKO A — Generation tidak konsisten
+Mitigasi: reference chain, satu master approved, overlay review, color normalization, tidak menerima kandidat pertama otomatis.
+Batas: tidak ada jaminan tool selalu menghasilkan anatomi/alpha yang tepat.
+
+RISIKO B — Layered animation tampak kaku
+Mitigasi: anticipation, overlap, counter-motion, contact shadow, pivot test sejak awal; pose tambahan terarah jika dibutuhkan.
+Gate: jangan melanjutkan produksi semua komponen sebelum animasi satu karakter lolos review.
+
+RISIKO C — Combat dua tombol terasa dangkal
+Mitigasi: positioning, enemy counterplay, projectile clearing, encounter pacing. Uji kesenangan sebelum menambah progression.
+
+RISIKO D — Art terlalu ramai
+Mitigasi: low-detail floor, value hierarchy, desaturasi background, telegraph bentuk jelas, thumbnail review.
+
+RISIKO E — Audio kualitasnya kurang
+Mitigasi: gaya synth/organic stylized yang realistis untuk pipeline, listening review, opsi aset berlisensi dengan persetujuan. Tidak menjanjikan soundtrack studio dari tool yang tidak tersedia.
+
+RISIKO F — Browser automation/perangkat tidak tersedia
+Mitigasi: cek tooling saat development dimulai, laporkan batas test, gunakan live preview dan verifikasi pengguna. Tidak menyamakan emulasi dengan pengujian fisik.
+
+RISIKO G — Ukuran aset/repository
+Mitigasi: runtime crops yang efisien, hanya master approved, tidak menyimpan semua kandidat, kompresi terukur, patuhi batas penyimpanan dan lisensi.
+
+KEPUTUSAN UNTUK EVALUASI
+1. Apakah LENTERA dan premis penjaga kebun diterima?
+2. Apakah gouache storybook malam lebih diinginkan daripada neon/geometris?
+3. Apakah target desktop utama + touch landscape diterima, dengan pengujian perangkat fisik oleh pengguna?
+4. Apakah slice tanpa boss, shop, inventory, dan progression diterima?
+5. Apakah pendekatan generated layered cutouts + procedural VFX diterima sebagai pipeline final, bukan placeholder?
+6. Apakah kemenangan 150 s plus cleanup dan session sekitar 3–4 menit sesuai?
+
+REKOMENDASI AKHIR
+Setujui konsep dan art direction dahulu. Setelah development diizinkan, buktikan satu karakter generated dapat bergerak dan menyerang dengan meyakinkan. Baru bangun vertical slice lengkap di satu arena. Jangan memperluas konten sebelum game feel, konsistensi visual, UI, audio, dan restart benar-benar lolos review.
+
+Dokumen ini adalah rencana untuk dievaluasi, bukan instruksi yang telah dijalankan. Tidak ada game final atau aset yang dibuat pada tahap laporan ini.

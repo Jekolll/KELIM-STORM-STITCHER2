@@ -1,0 +1,529 @@
+LAPORAN DISCOVERY KEMAMPUAN AGENT MODE
+Game browser — repository Jekolll/new-game
+
+CATATAN
+Laporan ini menjelaskan kemampuan environment, bukan laporan implementasi atau hasil pengujian. Isi repository, dependency, konfigurasi build, dan akses remote belum diperiksa. Belum ada game yang dibuat atau dites.
+File teks ini dibuat atas permintaan pengguna untuk dibagikan ke ChatGPT. Tidak ada kode game yang diubah, commit, atau push.
+
+KESIMPULAN UTAMA
+Saya dapat mengerjakan game browser secara menyeluruh: kode, visual, audio prosedural, integrasi, testing, dan pekerjaan GitHub. Pilihan paling aman untuk hasil polished adalah game 2D dengan scope terkendali dan art direction yang sesuai dengan pipeline aset. Hasil setara studio profesional tidak dapat dijamin hanya dengan satu instruksi atau satu generasi aset.
+
+Definisi status:
+YES: tersedia jalur langsung yang dapat dikerjakan.
+TERBATAS: dapat dikerjakan, tetapi ada batas kualitas, konsistensi, format, akses, atau workflow.
+NO: kemampuan tidak tersedia secara langsung, atau tidak diizinkan pada sesi ini.
+
+============================================================
+1. KEMAMPUAN GAME DEVELOPMENT
+============================================================
+
+TEKNOLOGI
+
+- HTML/CSS/JavaScript vanilla: YES. Bisa membuat game tanpa framework dan tanpa dependency runtime eksternal.
+- TypeScript: YES. Cocok untuk struktur sistem menengah/besar. Membutuhkan proses build.
+- Canvas 2D: YES. Bisa digunakan untuk sprite, tilemap, animasi, particles, kamera 2D, dan rendering custom.
+- SVG dan DOM/CSS: YES. Cocok untuk UI, ikon, permainan kartu/puzzle, dan visual vektor. DOM bukan pilihan utama untuk ribuan objek bergerak.
+- WebGL: YES. Biasanya lebih efisien melalui library daripada menulis renderer dari nol.
+- Phaser: YES, jika tersedia atau dapat dipasang. Menyediakan fondasi game 2D seperti scene, input, animasi, kamera, audio, dan physics.
+- PixiJS: YES, jika tersedia atau dapat dipasang. Renderer 2D; gameplay, physics, dan manajemen scene perlu dirancang atau ditambahkan.
+- Three.js: YES, jika tersedia atau dapat dipasang. Cocok untuk 3D/2.5D, tetapi bukan engine game lengkap.
+- Library lain: TERBATAS pada kompatibilitas dan ketersediaan. Contohnya Matter.js untuk physics 2D atau Babylon.js untuk 3D.
+- Engine berbasis editor: TERBATAS. Tidak mengasumsikan editor Unity/Godot atau toolchain export-nya tersedia.
+
+REKOMENDASI
+Default untuk game 2D action polished: Phaser + TypeScript + build tool ringan seperti Vite.
+Alasannya: fondasi game tersedia sehingga waktu lebih banyak digunakan untuk gameplay, visual, UI, dan tuning.
+
+Alternatif:
+- Vanilla + Canvas: game kecil, visual prosedural, atau syarat tanpa dependency.
+- PixiJS: rendering custom menjadi prioritas.
+- Three.js: konsep memang membutuhkan 3D.
+
+Engine tidak otomatis membuat game polished. Konsistensi aset, animasi, feedback, audio, UX, dan balancing lebih menentukan.
+
+SISTEM YANG BISA DIBUAT
+- Physics sederhana atau integrasi physics engine.
+- Collision, hitbox, hurtbox, trigger, raycast.
+- Particles, tweening, sprite animation.
+- Kamera follow, zoom, shake, perpindahan area.
+- Enemy AI berbasis state machine, steering, atau pathfinding.
+- Boss fight dengan fase, telegraph, pola serangan, cooldown.
+- Inventory, equipment, shop, loot, crafting sederhana.
+- Progression, upgrade, quest, unlock.
+- Save lokal melalui localStorage atau IndexedDB.
+
+Batasan:
+- Physics presisi tinggi dan AI kompleks meningkatkan pengembangan/testing.
+- Cloud save, akun, leaderboard terpercaya, dan multiplayer memerlukan layanan/backend tambahan.
+- Save lokal dapat hilang jika data browser dibersihkan.
+- Balancing dan game feel membutuhkan playtesting.
+
+============================================================
+2. ASSET
+============================================================
+
+1) Membuat aset game sendiri — YES
+Menggunakan kode, SVG, Canvas, generasi gambar, atau kombinasi. Tidak berarti setiap jenis aset otomatis mencapai kualitas artist profesional.
+
+2) Membuat sprite — YES
+Sprite geometris/pixel/vector bisa dibuat lewat kode. Sprite ilustratif bisa melalui generasi gambar dan pengolahan lanjutan.
+
+3) Membuat character — YES
+Bisa merancang siluet, palet, bentuk, dan atribut. Konsistensi lintas pose lebih sulit daripada satu gambar.
+
+4) Membuat enemy — YES
+Bisa membuat keluarga musuh dengan siluet/warna yang membedakan peran gameplay.
+
+5) Membuat boss — YES
+Bisa membuat desain dan aset boss. Animasi kompleks mungkin perlu dipisah menjadi bagian atau frame.
+
+6) Membuat background — YES
+Bisa berupa ilustrasi, vektor, background prosedural, atau lapisan parallax.
+
+7) Membuat tileset — TERBATAS
+Tileset sederhana/prosedural cukup terkontrol. Tileset ilustratif seamless, autotiling, dan sambungan sudut perlu validasi dan koreksi.
+
+8) Membuat UI asset — YES
+Panel, tombol, indikator, frame, bar, dan state interaksi melalui CSS, SVG, Canvas, atau gambar.
+
+9) Membuat icon — YES
+Sangat cocok menggunakan SVG dengan grid, stroke, dan bentuk konsisten.
+
+10) Membuat particle/effect — YES
+Banyak VFX lebih baik dibuat runtime: trail, sparks, smoke sederhana, flash, shockwave, dan distortion tertentu.
+
+11) Membuat sound effect — YES
+Sintesis prosedural/Web Audio atau pembuatan file audio melalui kode. Realisme suara tertentu terbatas.
+
+12) Membuat music — TERBATAS
+Bisa menyusun musik prosedural/synth sederhana. Tidak tersedia tool generasi musik khusus. Tidak menjanjikan soundtrack kompleks berkualitas studio.
+
+13) Memanggil image generation tool — YES
+Tool generate_image tersedia.
+
+14) Membuat aset menggunakan SVG/Canvas/CSS/code — YES
+Efektif untuk visual stylized, geometris, UI, ikon, dan efek yang membutuhkan konsistensi.
+
+15) Menyimpan hasil generate ke repository — YES
+Hasil dapat disimpan ke path di repository dan digunakan game. Menyimpan file tidak otomatis berarti commit/push.
+
+16) Mengedit atau memperbaiki aset — YES
+Bisa mengubah aset berbasis kode, memproses gambar, atau memakai gambar sebelumnya sebagai referensi edit generatif. Edit generatif tidak selalu presisi.
+
+17) Menghasilkan banyak aset dengan style konsisten — TERBATAS
+Style guide, palet, referensi, ukuran, dan seleksi hasil membantu. Generasi gambar tidak menjamin gaya maupun proporsi selalu identik.
+
+Aset hasil generate belum tentu langsung siap produksi. Perlu pengecekan framing, ukuran, transparansi, pivot, hitbox, kontras, padding, dan keterbacaan pada ukuran gameplay.
+
+============================================================
+3. IMAGE GENERATION
+============================================================
+
+AKSES: YES
+Tool yang tersedia: generate_image.
+
+Kemampuan:
+- Membuat gambar dari prompt.
+- Menerima gambar yang sudah ada sebagai referensi untuk edit/restyle/kombinasi.
+- Menyimpan hasil ke PNG, JPG, atau JPEG.
+- Menyimpan langsung ke path di dalam repository.
+
+Jawaban spesifik:
+- Membuat image secara langsung: YES.
+- Otomatis menyimpan ke repository: YES, jika path diarahkan ke repository. Tidak otomatis commit.
+- Membuat satu set aset konsisten: TERBATAS. Memerlukan referensi, panduan gaya, dan kurasi.
+- Membuat sprite sheet: TERBATAS. Bisa menghasilkan sheet, tetapi urutan pose, keseragaman frame, alignment, dan animasi seamless tidak terjamin.
+- Membuat variasi character/enemy/boss: YES, dengan kemungkinan pergeseran detail antargenerasi.
+- Iterasi jika hasil pertama jelek: YES. Regenerasi, edit berbasis referensi, atau mengganti pendekatan menjadi aset berbasis kode.
+
+Yang tidak dijanjikan:
+- PNG selalu memiliki transparansi bersih.
+- Pixel art selalu mengikuti pixel grid sempurna.
+- Karakter selalu identik dari semua sudut.
+- Tile selalu seamless.
+- Sprite sheet langsung siap animasi tanpa perbaikan.
+- Gambar menghasilkan file vector, rig, atau model 3D.
+
+Untuk animasi presisi, aset berlapis, animasi transform, atau sprite berbasis kode lebih aman daripada mengandalkan satu generasi sprite sheet.
+
+============================================================
+4. AUDIO
+============================================================
+
+Tidak tersedia tool khusus generasi musik/SFX berbasis prompt. Ada tool speech generation, tetapi menghasilkan suara bicara, bukan musik atau nyanyian.
+
+- SFX — YES
+  Sintesis oscillator, noise, envelope, filter, modulasi.
+- Background music — TERBATAS
+  Komposisi prosedural/chiptune/synth/ambient sederhana, atau integrasi musik berlisensi.
+- UI sound — YES
+  Click, confirm, cancel, hover, purchase, error.
+- Explosion sound — YES
+  Noise berlapis, low-frequency burst, decay. Lebih sesuai untuk arcade daripada sinematik realistis.
+- Hit sound — YES
+  Transient pendek, pitch sweep, noise, variasi terkendali.
+- Weapon sound — YES
+  Cocok untuk laser, magic, projectile, senjata stylized. Suara realistis lebih cocok menggunakan rekaman lain.
+- Ambient sound — TERBATAS
+  Drone, angin sintetis, hum, tekstur sederhana. Ambience alam realistis lebih cocok memakai rekaman berlisensi.
+
+PENYIMPANAN KE REPOSITORY: YES
+Dalam bentuk file audio, kode sintesis, atau aset eksternal yang mengizinkan redistribusi. Encoding format tertentu bergantung pada tool yang tersedia/dapat dipasang.
+
+Hal yang perlu ditangani:
+- Audio browser biasanya baru aktif setelah interaksi pengguna.
+- Mute dan pengaturan volume.
+- Loudness antar-SFX.
+- Loop yang tidak putus.
+- Batas suara bersamaan agar tidak clipping.
+
+Saya tidak memiliki sesi mendengarkan langsung seperti playtester manusia. Analisis teknis membantu, tetapi penilaian musik dan mixing sebaiknya melibatkan pengguna.
+
+============================================================
+5. GITHUB / AGENT MODE
+============================================================
+
+Repository: Jekolll/new-game
+Working branch sesi: arena/01a081aa-new-game
+
+- Membaca repository — YES
+  Membaca file checkout lokal secara bertahap. Submodule, Git LFS, dan resource eksternal mungkin perlu diambil terlebih dahulu.
+- Membuat folder — YES.
+- Membuat file — YES.
+- Mengedit file — YES.
+- Menghapus file — YES, untuk file proyek relevan sesuai instruksi. Root repository dan .git tidak boleh dihapus.
+- Membuat asset — YES.
+- Menjalankan command — YES, di sandbox. Tidak semua software/izin sistem dijamin tersedia.
+- Menjalankan build — YES, jika toolchain/dependency tersedia atau dapat dipasang.
+- Menjalankan test — YES, sesuai test runner dan dependency.
+- Membuka hasil build — YES, melalui server/live preview untuk diperiksa pengguna.
+- Memperbaiki error — YES, berdasarkan log, reproduksi, dan testing. Tidak menjamin semua masalah langsung selesai.
+- Git diff — YES.
+- Commit — YES, pada tahap development sesuai instruksi/kebutuhan.
+- Push — YES, hanya ke branch sesi, selama izin remote memungkinkan.
+- Membuat branch — NO untuk sesi ini. Sesi terikat pada branch di atas; tidak boleh membuat atau berpindah ke branch lain.
+- Membuat pull request — YES, melalui gh, dari branch sesi, selama izin GitHub memungkinkan.
+
+Autentikasi GitHub disediakan environment, tetapi belum diverifikasi melalui command pada discovery. Jika bermasalah, pengguna perlu reconnect GitHub melalui Arena, bukan memberikan token/password di chat.
+
+============================================================
+6. TESTING
+============================================================
+
+Bisa melakukan testing nyata, tetapi server/log testing, otomatisasi browser, dan playtesting manusia adalah hal berbeda.
+
+YANG LANGSUNG TERSEDIA
+- Menjalankan command build dan test.
+- Menjalankan server game dan live preview.
+- Membaca log server/build.
+- Menguji logika gameplay dengan unit/integration test.
+- Memeriksa referensi aset dan respons HTTP.
+- Memperbaiki bug dan mengulang test.
+
+YANG MEMERLUKAN SETUP TAMBAHAN
+Tidak tersedia tool browser automation khusus secara langsung. Saya bisa mencoba memasang/menggunakan Playwright atau alat sejenis melalui terminal.
+
+Jika berhasil tersedia, dapat digunakan untuk:
+- Menjalankan game di browser headless.
+- Menangkap JavaScript exception dan console error.
+- Mendeteksi request gagal/404.
+- Mengambil screenshot.
+- Menguji keyboard, mouse, dan emulasi touch.
+- Menguji beberapa viewport.
+- Mengukur metrik runtime tertentu.
+
+Tidak boleh mengklaim testing tersebut sudah dilakukan sebelum alatnya benar-benar berjalan.
+
+PER KEBUTUHAN
+- Collision: unit test, debug hitbox, skenario deterministik, simulasi runtime. Tidak membuktikan semua edge case bebas bug.
+- Responsive layout: viewport dan screenshot jika browser automation tersedia.
+- Mobile controls: emulasi touch membantu, tetapi bukan pengganti perangkat fisik.
+- Performance: frame time, jumlah objek, draw calls, alokasi memori. Sandbox bukan jaminan performa semua ponsel.
+- Console error: perlu browser runtime/automation; log server saja tidak cukup.
+- Broken asset: validasi path, output build, request jaringan, decode aset saat dimuat.
+- Game feel: tuning teknis memungkinkan, tetapi penilaian terbaik membutuhkan feedback bermain manusia.
+
+SIKLUS
+Build -> automated checks -> browser smoke test -> gameplay scenarios -> visual review -> playtest pengguna -> bug fix -> regression test.
+
+Laporan harus membedakan lulus, gagal, dan belum diuji. Build berhasil tidak sama dengan semua aspek sudah dites.
+
+============================================================
+7. VISUAL QUALITY
+============================================================
+
+Kualitas polished memerlukan pipeline dan kriteria konkret, bukan sekadar menyebut premium dalam prompt.
+
+1) Art direction sebelum produksi
+Tentukan tema, palet, bentuk, pencahayaan, tingkat detail, referensi, dan gaya yang bisa diproduksi konsisten.
+
+2) Style guide
+Ukuran sprite, ketebalan outline, proporsi karakter, warna bahaya/loot/interaksi, grid ikon, spacing UI, dan skala typography.
+
+3) Character design
+Siluet mudah dikenali, terbaca pada ukuran kecil, dan mencerminkan fungsi gameplay.
+
+4) Environment
+Pisahkan foreground, area bermain, background. Gunakan kedalaman/parallax/pencahayaan secukupnya. Dekorasi tidak boleh menyamarkan bahaya.
+
+5) Animation
+Idle, movement, attack, hit, death, spawn. Perhatikan anticipation, impact, recovery. Gunakan squash/stretch atau animasi transform bila sesuai.
+
+6) VFX dan game feel
+Hit flash, trail, burst, knockback, hit-stop, camera shake. Input responsif, timing serangan, telegraph jelas. Intensitas efek terkendali dan dapat dikurangi bila perlu.
+
+7) UI dan typography
+Hierarki jelas, font berlisensi, kontras memadai, state hover/focus/pressed/disabled. HUD tidak mengganggu area permainan. Teks sebaiknya dirender tajam, bukan tertanam dalam gambar generatif.
+
+8) Menu dan transitions
+Title screen, tutorial, pause, settings, game over, victory, loading. Perpindahan state tidak mendadak atau kehilangan input.
+
+9) Review di dalam game
+Aset dinilai pada ukuran dan latar sebenarnya, bukan hanya sebagai gambar besar terpisah.
+
+AGAR TIDAK TERLIHAT SEPERTI TEMPLATE AI
+- Identitas visual spesifik.
+- Tidak mencampur style aset yang bertentangan.
+- Tidak mengandalkan glow/gradient/panel transparan sebagai pengganti desain.
+- Sedikit fitur selesai lebih baik daripada banyak fitur setengah jadi.
+- Sediakan tahap polish setelah gameplay inti bekerja.
+
+Rekomendasi: buat satu vertical slice yang mewakili kualitas final sebelum memproduksi semua level dan aset.
+
+============================================================
+8. PROJECT SIZE
+============================================================
+
+YES, dapat mengerjakan proyek dengan banyak file dan folder, termasuk struktur:
+/src
+/assets
+/assets/characters
+/assets/enemies
+/assets/backgrounds
+/assets/ui
+/assets/audio
+/js
+/styles
+/index.html
+
+Struktur akan disesuaikan dengan kebutuhan; /src dan /js tidak harus sama-sama digunakan jika hanya menduplikasi fungsi.
+
+Pemisahan yang disarankan:
+- Scene/state.
+- Entities.
+- Sistem gameplay.
+- UI.
+- Konfigurasi/data.
+- Asset dan audio.
+- Testing.
+
+BATAS PRAKTIS
+- Proyek besar dibaca bertahap, bukan seluruhnya sekaligus.
+- Banyak sistem saling bergantung memerlukan dokumentasi dan test.
+- Ribuan aset besar menambah waktu proses dan ukuran repository.
+- Patchset turn-end memiliki batas best-effort sekitar 128 MB gabungan atau 10.000 file.
+- Dependency, cache, dan hasil build sebaiknya tidak dimasukkan ke Git tanpa alasan.
+- Aset besar mungkin memerlukan Git LFS atau storage eksternal, dengan pemeriksaan dukungan deployment.
+
+Banyak file bukan masalah utama; scope, ukuran aset, dan arsitektur lebih menentukan.
+
+============================================================
+9. INTERNET / EXTERNAL ASSETS
+============================================================
+
+TANPA DEPENDENCY EKSTERNAL: YES
+HTML, CSS, JavaScript, Canvas, Web Audio, dan aset lokal bisa digunakan.
+
+Bedakan:
+- Tanpa library eksternal.
+- Tanpa request CDN saat bermain.
+- Bisa offline setelah pernah dibuka.
+
+Ketiganya berbeda. Offline biasanya membutuhkan caching/service worker atau distribusi lokal yang sesuai.
+
+JIKA MEMAKAI LIBRARY
+- Pasang melalui package manager.
+- Catat versi dan lockfile.
+- Bundle library ke output produksi.
+- Browser pemain tidak harus mengambil library dari CDN.
+- Umumnya package.json dan lockfile disimpan di Git; node_modules tidak di-commit.
+
+JIKA MEMAKAI ASET EKSTERNAL
+- Unduh file yang diizinkan.
+- Simpan lokal jika lisensi membolehkan redistribusi.
+- Catat sumber, lisensi, attribution.
+- Gunakan path kompatibel dengan deployment.
+
+SETELAH DEPLOYMENT
+Game bisa berjalan jika output build lengkap, base path benar, aset terunggah, hosting sesuai, dan backend yang diperlukan tersedia.
+GitHub Pages dengan subdirektori proyek memerlukan penanganan path yang benar.
+
+LISENSI
+Gratis di internet tidak berarti bebas digunakan. Periksa:
+- Penggunaan komersial.
+- Modifikasi.
+- Redistribusi.
+- Attribution.
+- Share-alike.
+- Lisensi font dan audio.
+
+Aset generatif tidak otomatis memberi jaminan bebas sengketa. Saya bisa membantu memeriksa ketentuan dan mencatat sumber, bukan memberikan jaminan hukum.
+
+============================================================
+10. LIMA REKOMENDASI KONSEP GAME
+============================================================
+
+Kompleksitas berikut relatif untuk versi scoped yang polished, bukan versi dengan konten tanpa batas.
+
+A. NEON SENTINEL — ARENA SURVIVAL SHOOTER
+Genre: top-down action/survival.
+Gameplay: bergerak, dash, menembak, memilih upgrade, bertahan dari wave, menghadapi boss.
+Visual: sci-fi geometris, palet terbatas, VFX energik.
+Difficulty development: menengah; balancing dan performa banyak musuh menjadi tantangan utama.
+Asset: pemain, 5–8 jenis musuh, satu boss, satu arena, ikon upgrade, HUD, SFX, musik loop.
+Teknologi: Phaser + TypeScript; Web Audio atau file audio lokal.
+Bisa polished: YES, sangat cocok dan tidak menuntut animasi realistis.
+Kompleksitas: MEDIUM.
+
+B. CLOCKWORK COURIER — PUZZLE MEKANIS
+Genre: grid puzzle/sokoban.
+Gameplay: mendorong objek, mengaktifkan sakelar, menghubungkan mekanisme, mencapai tujuan.
+Visual: diorama 2D, bentuk bersih, warna hangat, detail mekanis.
+Difficulty development: rendah–menengah; kualitas desain level adalah tantangan terbesar.
+Asset: kurir, peti, lantai, dinding, pintu, sakelar, dekorasi, ikon, UI, SFX.
+Teknologi: Canvas atau Phaser; UI HTML/CSS.
+Bisa polished: YES, salah satu pilihan paling aman.
+Kompleksitas: LOW untuk mekanik terbatas dan level terkurasi.
+
+C. EMBER BASTION — TOWER DEFENSE
+Genre: strategy/tower defense.
+Gameplay: menempatkan tower, mengelola uang, upgrade, menghadapi wave dan boss.
+Visual: fantasy ilustratif dengan arena/bangunan konsisten.
+Difficulty development: menengah–tinggi; balancing kombinasi tower dan wave cukup besar.
+Asset: map, 4–6 tower dengan upgrade, 6–8 enemy, boss, projectile, efek, UI, audio.
+Teknologi: Phaser + TypeScript; jalur musuh tetap agar sistem terkendali.
+Bisa polished: YES, dimulai dari satu map dengan roster terbatas.
+Kompleksitas: HIGH.
+
+D. MIDNIGHT CIRCUIT — TIME-TRIAL RACING
+Genre: arcade racing top-down.
+Gameplay: akselerasi, pengereman, drift, checkpoint, mengejar catatan waktu.
+Visual: lintasan malam stylized, kendaraan bersiluet jelas.
+Difficulty development: menengah; handling dan collision memerlukan tuning.
+Asset: mobil, lintasan, rambu, barrier, skid marks, smoke, HUD, suara mesin/ban.
+Teknologi: Phaser atau Canvas dengan model kendaraan arcade custom.
+Bisa polished: YES, mulai satu lintasan dan satu mobil tanpa multiplayer.
+Kompleksitas: MEDIUM.
+
+E. RELIC DUEL — CARD BATTLER RINGKAS
+Genre: turn-based card combat/roguelite.
+Gameplay: memainkan kartu, mengelola resource, membaca niat musuh, memilih reward, menghadapi boss.
+Visual: ilustrasi relic/monster, UI editorial, typography kuat.
+Difficulty development: tinggi; kombinasi efek membutuhkan arsitektur dan test rapi.
+Asset: ilustrasi kartu, portrait enemy/boss, ikon status, background arena, UI, efek, audio.
+Teknologi: TypeScript + HTML/CSS; Canvas/PixiJS opsional untuk efek.
+Bisa polished: YES; kebutuhan animasi frame-by-frame dapat diminimalkan.
+Kompleksitas: HIGH.
+
+PILIHAN UTAMA
+- Neon Sentinel untuk aksi dan game feel.
+- Clockwork Courier untuk risiko produksi rendah dan peluang penyelesaian polished paling tinggi.
+
+============================================================
+11. KETERBATASAN PENTING
+============================================================
+
+1. Kualitas bukan jaminan otomatis. Polished memerlukan iterasi dan acceptance criteria.
+2. Repository belum diperiksa; kondisi kode, dependency, test, dan aset belum diketahui.
+3. Scope besar tidak selesai sekaligus; perlu milestone dan beberapa putaran kerja.
+4. Generasi gambar tidak deterministik; konsistensi, transparansi, tileset, animasi bisa bermasalah.
+5. Tidak ada tool generasi musik/SFX khusus; audio realistis/orkestral memerlukan sumber atau tool lain.
+6. Tidak ada tool browser automation bawaan langsung; jalur terminal bergantung pada instalasi toolchain/browser yang berhasil.
+7. Live preview bukan bukti game sudah dimainkan atau dites.
+8. Tidak ada perangkat mobile fisik; emulasi bukan jaminan hasil identik.
+9. Performance semua perangkat tidak bisa dijamin.
+10. Penilaian artistik dan game feel tetap membutuhkan feedback manusia.
+11. Tool, network, package, dan API eksternal bisa gagal atau memerlukan akun berbayar.
+12. Tidak menjamin bebas bug, celah keamanan, atau masalah lisensi.
+13. Hosting produksi berbeda dari live preview; domain, billing, backend, dan platform hosting bisa memerlukan akses/keputusan pengguna.
+14. Multiplayer/backend menambah sinkronisasi, reconnect, latency, anti-cheat, operasional, dan biaya.
+15. Browser memiliki batas autoplay, storage quota, fullscreen, pointer lock, dan background tab.
+16. 3D lebih berat; model, rig, dan animasi skeletal memerlukan pipeline tambahan. Image generation bukan pengganti model 3D siap pakai.
+17. Penyimpanan dan konteks terbatas; proyek besar perlu dipecah dan didokumentasikan.
+18. Branch sesi tetap: arena/01a081aa-new-game.
+19. Push/PR bergantung pada koneksi dan izin GitHub.
+20. Maintenance tidak berjalan otomatis selamanya; sesi ini bukan tim operasional yang terus memonitor setelah rilis.
+
+============================================================
+12. REKOMENDASI PIPELINE
+============================================================
+
+IDEA
+Saya: menawarkan konsep, evaluasi risiko, scope.
+Pengguna: memilih target pemain, genre, prioritas.
+
+GAME DESIGN
+Saya: core loop, kontrol, sistem, aturan, progression, acceptance criteria.
+Pengguna: menyetujui arah dan batas fitur.
+
+ART DIRECTION
+Saya: palet, siluet, style guide, rancangan UI, contoh visual.
+Pengguna: memberi referensi/selera dan persetujuan gaya.
+
+ASSET CREATION
+Saya: aset code/vector/generatif, ukuran, format, integrasi.
+Tambahan: kurasi pengguna; artist atau aset berlisensi jika target melebihi pipeline.
+
+PROGRAMMING
+Saya: arsitektur dan seluruh sistem dalam scope.
+Tambahan: dependency/toolchain jika digunakan.
+
+AUDIO
+Saya: SFX prosedural, musik sederhana, mixer, settings.
+Tambahan: musik profesional/rekaman realistis memerlukan aset atau tool lain.
+
+UI
+Saya: HUD, menu, tutorial, pause, settings, state interaksi.
+Pengguna: feedback keterbacaan dan kenyamanan.
+
+INTEGRATION
+Saya: menyatukan gameplay, aset, animasi, audio, save, scene flow.
+Umumnya bisa saya kerjakan sendiri.
+
+TESTING
+Saya: build, unit/integration test, validasi aset, browser automation jika tersedia.
+Tambahan: playtest manusia dan perangkat nyata.
+
+BUG FIX
+Saya: reproduksi, perbaikan, regression test.
+Pengguna: laporan untuk bug yang hanya muncul di perangkatnya.
+
+OPTIMIZATION
+Saya: profiling, pooling, pengurangan alokasi, kompresi, optimasi loading/rendering.
+Pengguna: menyepakati target perangkat dan performa.
+
+FINAL BUILD
+Saya: build produksi, dokumentasi run/build, daftar keterbatasan.
+Tambahan: target hosting dan izin deployment bila diperlukan.
+
+GITHUB
+Saya: review diff, commit, push branch sesi, membuat PR jika diminta.
+Tambahan: koneksi GitHub aktif dan keputusan merge sesuai kewenangan pengguna.
+
+WORKFLOW TERBAIK
+Discovery
+-> Persetujuan scope dan target kualitas
+-> Game design + art direction
+-> Vertical slice dengan visual, audio, UI representatif
+-> Evaluasi bersama
+-> Produksi konten
+-> Integrasi lengkap
+-> Testing dan bug fix berulang
+-> Polish dan optimization
+-> Final build
+-> GitHub/PR dan deployment sesuai instruksi
+
+Git digunakan sepanjang development untuk pelacakan perubahan, bukan hanya di akhir.
+
+REKOMENDASI AKHIR
+Pilih game 2D single-player, satu mekanik utama kuat, satu style visual terkendali, dan konten awal terbatas. Buktikan kualitas melalui vertical slice terlebih dahulu. Ini jalur paling realistis untuk menghasilkan game enak dimainkan dan terlihat matang, bukan prototype dengan banyak fitur setengah jadi.

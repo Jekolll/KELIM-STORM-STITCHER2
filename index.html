@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>KELIM: Storm Stitcher</title>
+    <meta name="description" content="KELIM: Storm Stitcher — menjahit badai, satu jarum demi satu jarum." />
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        background: #14161d;
+        overscroll-behavior: none;
+      }
+      #app {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+      }
+      /* Layar "memuat": tampil segera saat HTML dibaca, sebelum JS game jalan.
+         Ditutup (hidden) oleh game setelah boot sukses. */
+      #boot {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: #14161d;
+        color: #f2ebdd;
+        font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+        text-align: center;
+        padding: 24px;
+      }
+      #boot .boot-logo {
+        font-family: 'Fraunces', Georgia, 'Times New Roman', serif;
+        font-size: 64px;
+        font-weight: 900;
+        letter-spacing: 10px;
+        color: #f2ebdd;
+      }
+      #boot .boot-sub {
+        font-size: 13px;
+        font-style: 600;
+        letter-spacing: 6px;
+        color: #d9a441;
+      }
+      #boot .boot-status {
+        margin-top: 18px;
+        font-size: 14px;
+        color: #9b8c7a;
+        letter-spacing: 1px;
+      }
+      #boot .boot-spinner {
+        width: 34px;
+        height: 34px;
+        border: 3px solid #3e706d;
+        border-top-color: #d9a441;
+        border-radius: 50%;
+        animation: kelim-spin 0.9s linear infinite;
+        margin-bottom: 8px;
+      }
+      @keyframes kelim-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      /* Live region status scene: tetap ada di DOM untuk screen reader dan
+         untuk pemeriksaan eksternal (mis. cek deploy), tapi tak terlihat. */
+      .sr-live {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+        border: 0;
+      }
+
+      /* Panel error: menggantikan layar "memuat" jika game gagal boot. */
+      #error {
+        position: fixed;
+        inset: 0;
+        z-index: 1001;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #14161d;
+        padding: 24px;
+        font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+      }
+      #error[hidden] {
+        display: none;
+      }
+      #error .error-card {
+        max-width: 640px;
+        width: 100%;
+        background: #1d212b;
+        border: 1px solid #c75c4a;
+        border-radius: 10px;
+        padding: 28px 30px;
+        color: #f2ebdd;
+      }
+      #error .error-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #c75c4a;
+        letter-spacing: 2px;
+        margin-bottom: 14px;
+      }
+      #error .error-detail {
+        margin: 0;
+        font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        color: #d8ccb5;
+        white-space: pre-wrap;
+        word-break: break-word;
+        max-height: 40vh;
+        overflow: auto;
+        background: #14161d;
+        border: 1px solid #2a2f3b;
+        border-radius: 6px;
+        padding: 12px;
+      }
+      #error .error-hint {
+        margin-top: 16px;
+        font-size: 13px;
+        color: #9b8c7a;
+      }
+      #error .error-actions {
+        margin-top: 18px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      #error button {
+        font: 600 13px 'Source Sans 3', system-ui, sans-serif;
+        letter-spacing: 1px;
+        color: #14161d;
+        background: #d9a441;
+        border: 0;
+        border-radius: 6px;
+        padding: 10px 18px;
+        cursor: pointer;
+      }
+      #error button:hover {
+        filter: brightness(1.08);
+      }
+    </style>
+    <!-- Bootstrap + error bridge (script klasik, jalan sebelum modul game).
+         Menangkap error level modul/WebGL/runtime sehingga halaman tidak pernah
+         blank tanpa penjelasan. -->
+    <script>
+      (function () {
+        function el(id) {
+          return document.getElementById(id);
+        }
+        function setStatus(msg) {
+          var s = el('boot-status');
+          if (s && msg) s.textContent = msg;
+        }
+        function setShown(id, shown) {
+          var n = el(id);
+          if (!n) return;
+          if (shown) n.removeAttribute('aria-hidden');
+          else n.setAttribute('aria-hidden', 'true');
+        }
+        function showLoading(msg) {
+          var boot = el('boot');
+          if (boot) boot.classList.remove('hidden');
+          setShown('boot', true);
+          var err = el('error');
+          if (err) err.hidden = true;
+          setShown('error', false);
+          if (msg) setStatus(msg);
+        }
+        function showError(title, detail) {
+          var boot = el('boot');
+          if (boot) boot.classList.add('hidden');
+          var err = el('error');
+          if (!err) return;
+          var t = el('error-title');
+          var d = el('error-detail');
+          if (t) t.textContent = title || 'Game gagal boot';
+          if (d) d.textContent = detail || 'Terjadi kesalahan tanpa pesan.';
+          err.hidden = false;
+          setShown('error', true);
+        }
+        function bootDone() {
+          var boot = el('boot');
+          if (boot) boot.classList.add('hidden');
+          setShown('boot', false);
+          // Bersihkan teks panel error saat boot sukses: tanpa ini, judul
+          // "Game gagal boot" yang tersembunyi tetap terbaca oleh screen reader
+          // (dan oleh pemeriksa halaman otomatis) walau tidak ada error.
+          var err = el('error');
+          if (err) err.hidden = true;
+          setShown('error', false);
+          var t = el('error-title');
+          var d = el('error-detail');
+          if (t) t.textContent = '';
+          if (d) d.textContent = '';
+          setScene('Boot');
+        }
+        function setScene(name) {
+          var live = el('scene-status');
+          if (live) live.textContent = 'KELIM siap — scene aktif: ' + (name || '?');
+        }
+        // API yang dipakai modul game (main.ts / BootScene).
+        window.__kelimShowLoading = showLoading;
+        window.__kelimSetStatus = setStatus;
+        window.__kelimBootDone = bootDone;
+        window.__kelimShowError = showError;
+        window.__kelimSetScene = setScene;
+
+        // Jika boot masih berjalan terlalu lama, beri tahu (bukan kosong selamanya).
+        setTimeout(function () {
+          var boot = el('boot');
+          if (boot && !boot.classList.contains('hidden')) {
+            setStatus('Masih memuat… jika ini terus berjalan, muat ulang halaman.');
+          }
+        }, 15000);
+
+        window.addEventListener('error', function (e) {
+          var msg = (e && e.message) || 'Error tidak diketahui';
+          var detail = msg;
+          if (e && e.filename) {
+            detail += '\n' + e.filename + ':' + e.lineno + ':' + e.colno;
+          }
+          if (e && e.error && e.error.stack) detail += '\n' + e.error.stack;
+          showError('Game gagal boot', detail);
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+          var r = e && e.reason;
+          var detail = (r && (r.message || r.toString())) || 'Promise rejection tanpa pesan';
+          if (r && r.stack) detail += '\n' + r.stack;
+          showError('Game gagal boot', detail);
+        });
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <p id="scene-status" class="sr-live" role="status" aria-live="polite">
+      KELIM: Storm Stitcher — memuat…
+    </p>
+    <div id="boot" role="status" aria-live="polite" aria-hidden="false">
+      <div class="boot-spinner"></div>
+      <div class="boot-logo">KELIM</div>
+      <div class="boot-sub">STORM STITCHER</div>
+      <div class="boot-status" id="boot-status">memuat…</div>
+    </div>
+    <div id="error" hidden aria-hidden="true" role="alert">
+      <div class="error-card">
+        <div class="error-title" id="error-title">Game gagal boot</div>
+        <pre class="error-detail" id="error-detail"></pre>
+        <div class="error-hint">Periksa koneksi atau refresh untuk mencoba lagi.</div>
+        <div class="error-actions">
+          <button type="button" onclick="location.reload()">Muat ulang</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
